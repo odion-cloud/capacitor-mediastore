@@ -45,7 +45,10 @@
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
     "docgen": "docgen --api CapacitorMediaStorePlugin --output-readme README.md --output-json dist/docs.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release:patch": "npm version patch && git push origin main --tags",
+    "release:minor": "npm version minor && git push origin main --tags",
+    "release:major": "npm version major && git push origin main --tags"
   },
   "devDependencies": {
     "@capacitor/docgen": "^0.0.18",
