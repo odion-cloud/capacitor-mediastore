@@ -11,7 +11,7 @@ if (!['patch', 'minor', 'major'].includes(releaseType)) {
 }
 
 try {
-  console.log(`🚀 Creating ${releaseType} release with GitHub release...`);
+  console.log(`🚀 Creating ${releaseType} release...`);
   
   // Update version
   execSync(`npm version ${releaseType}`, { stdio: 'inherit' });
@@ -24,35 +24,38 @@ try {
   // Push changes and tags
   execSync('git push origin main --tags', { stdio: 'inherit' });
   
-  // Create GitHub release (requires GitHub CLI)
-  const releaseNotes = `## What's Changed in ${tagName}
+  console.log(`\n✅ Version ${newVersion} tagged and pushed!`);
+  console.log(`\n📦 NEXT STEP: Create GitHub Release to trigger automatic npm publishing:`);
+  console.log(`🔗 ${generateReleaseUrl(tagName, releaseType, newVersion)}`);
+  console.log(`\n💡 After creating the release, GitHub Actions will automatically:`);
+  console.log(`   ✅ Build the package`);
+  console.log(`   ✅ Publish to npm registry`);
+  console.log(`   ✅ Publish to GitHub Packages`);
+  
+} catch (error) {
+  console.error('❌ Release failed:', error.message);
+  process.exit(1);
+}
+
+function generateReleaseUrl(tagName, releaseType, newVersion) {
+  const baseUrl = 'https://github.com/odion-cloud/capacitor-mediastore/releases/new';
+  const title = `${tagName} - ${releaseType.charAt(0).toUpperCase() + releaseType.slice(1)} Update`;
+  const body = `## What's Changed in ${tagName}
 
 ### ${releaseType.charAt(0).toUpperCase() + releaseType.slice(1)} Update
 
 - Package version updated to ${newVersion}
 - Automated publishing to npm and GitHub Packages
-- See full changelog at: https://github.com/odion-cloud/capacitor-mediastore/compare/v${getPreviousVersion(newVersion)}...${tagName}
 
 **Installation:**
 \`\`\`bash
 npm install @odion-cloud/capacitor-mediastore@${newVersion}
 npx cap sync
-\`\`\``;
+\`\`\`
 
-  // Create GitHub release using gh CLI
-  try {
-    execSync(`gh release create ${tagName} --title "${tagName} - ${releaseType.charAt(0).toUpperCase() + releaseType.slice(1)} Update" --notes "${releaseNotes}"`, { stdio: 'inherit' });
-    console.log(`✅ GitHub release ${tagName} created! 🎉`);
-    console.log(`📦 Publishing to npm will happen automatically via GitHub Actions`);
-    console.log(`🔗 View release: https://github.com/odion-cloud/capacitor-mediastore/releases/tag/${tagName}`);
-  } catch (error) {
-    console.log(`⚠️  GitHub release creation failed. Create it manually at:`);
-    console.log(`🔗 https://github.com/odion-cloud/capacitor-mediastore/releases/new?tag=${tagName}`);
-  }
-  
-} catch (error) {
-  console.error('❌ Release failed:', error.message);
-  process.exit(1);
+**Full Changelog:** https://github.com/odion-cloud/capacitor-mediastore/compare/v${getPreviousVersion(newVersion)}...${tagName}`;
+
+  return `${baseUrl}?tag=${tagName}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
 }
 
 function getPreviousVersion(currentVersion) {

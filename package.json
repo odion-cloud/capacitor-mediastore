@@ -46,9 +46,10 @@
     "prepublishOnly": "npm run build",
     "docgen": "docgen --api CapacitorMediaStorePlugin --output-readme README.md --output-json dist/docs.json",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "release:patch": "npm version patch && git push origin main --tags",
-    "release:minor": "npm version minor && git push origin main --tags",
-    "release:major": "npm version major && git push origin main --tags"
+    "release:patch": "node scripts/create-release.js patch",
+    "release:minor": "node scripts/create-release.js minor",
+    "release:major": "node scripts/create-release.js major",
+    "release": "node scripts/create-release.js"
   },
   "devDependencies": {
     "@capacitor/docgen": "^0.0.18",
