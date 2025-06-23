@@ -14,7 +14,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Size
-import androidx.core.app.ComponentActivity
+
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import java.io.ByteArrayInputStream
@@ -22,7 +22,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class MediaStoreHelper(private val context: Context, private val activity: ComponentActivity?) {
+class MediaStoreHelper(private val context: Context) {
 
     data class MediaQueryOptions(
         val limit: Int? = null,

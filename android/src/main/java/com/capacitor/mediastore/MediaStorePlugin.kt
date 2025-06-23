@@ -10,6 +10,7 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
 import com.getcapacitor.annotation.PermissionCallback
+import com.getcapacitor.PermissionState
 
 @CapacitorPlugin(
     name = "CapacitorMediaStore",
@@ -45,7 +46,7 @@ class MediaStorePlugin : Plugin() {
     private lateinit var mediaStoreHelper: MediaStoreHelper
 
     override fun load() {
-        mediaStoreHelper = MediaStoreHelper(context, activity)
+        mediaStoreHelper = MediaStoreHelper(context)
     }
 
     @PluginMethod
@@ -134,28 +135,28 @@ class MediaStorePlugin : Plugin() {
     }
 
     @PluginMethod
-    fun checkPermissions(call: PluginCall) {
+    override fun checkPermissions(call: PluginCall) {
         val result = JSObject()
         
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
                 // Android 14+ (API 34+) - Visual media permissions
-                result.put("readMediaImages", getPermissionState(Manifest.permission.READ_MEDIA_IMAGES))
-                result.put("readMediaAudio", getPermissionState(Manifest.permission.READ_MEDIA_AUDIO))
-                result.put("readMediaVideo", getPermissionState(Manifest.permission.READ_MEDIA_VIDEO))
-                result.put("readMediaVisualUserSelected", getPermissionState("android.permission.READ_MEDIA_VISUAL_USER_SELECTED"))
+                result.put("readMediaImages", getPermissionState(Manifest.permission.READ_MEDIA_IMAGES).toString())
+                result.put("readMediaAudio", getPermissionState(Manifest.permission.READ_MEDIA_AUDIO).toString())
+                result.put("readMediaVideo", getPermissionState(Manifest.permission.READ_MEDIA_VIDEO).toString())
+                result.put("readMediaVisualUserSelected", getPermissionState("android.permission.READ_MEDIA_VISUAL_USER_SELECTED").toString())
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                 // Android 13+ (API 33+) - Granular media permissions
-                result.put("readMediaImages", getPermissionState(Manifest.permission.READ_MEDIA_IMAGES))
-                result.put("readMediaAudio", getPermissionState(Manifest.permission.READ_MEDIA_AUDIO))
-                result.put("readMediaVideo", getPermissionState(Manifest.permission.READ_MEDIA_VIDEO))
+                result.put("readMediaImages", getPermissionState(Manifest.permission.READ_MEDIA_IMAGES).toString())
+                result.put("readMediaAudio", getPermissionState(Manifest.permission.READ_MEDIA_AUDIO).toString())
+                result.put("readMediaVideo", getPermissionState(Manifest.permission.READ_MEDIA_VIDEO).toString())
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
                 // Android 6+ (API 23+) - Runtime permissions
-                result.put("readExternalStorage", getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE))
+                result.put("readExternalStorage", getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE).toString())
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    result.put("writeExternalStorage", getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                    result.put("writeExternalStorage", getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE).toString())
                 }
             }
             else -> {
@@ -169,7 +170,7 @@ class MediaStorePlugin : Plugin() {
     }
 
     @PluginMethod
-    fun requestPermissions(call: PluginCall) {
+    override fun requestPermissions(call: PluginCall) {
         val permissions = mutableListOf<String>()
         
         when {
@@ -212,28 +213,28 @@ class MediaStorePlugin : Plugin() {
         checkPermissions(call)
     }
 
-    private fun hasRequiredPermissions(): Boolean {
+    override fun hasRequiredPermissions(): Boolean {
         return when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
                 // Android 14+ (API 34+) - Visual media permissions
-                getPermissionState(Manifest.permission.READ_MEDIA_IMAGES) == "granted" ||
-                getPermissionState(Manifest.permission.READ_MEDIA_AUDIO) == "granted" ||
-                getPermissionState(Manifest.permission.READ_MEDIA_VIDEO) == "granted" ||
-                getPermissionState("android.permission.READ_MEDIA_VISUAL_USER_SELECTED") == "granted"
+                getPermissionState(Manifest.permission.READ_MEDIA_IMAGES) == PermissionState.GRANTED ||
+                getPermissionState(Manifest.permission.READ_MEDIA_AUDIO) == PermissionState.GRANTED ||
+                getPermissionState(Manifest.permission.READ_MEDIA_VIDEO) == PermissionState.GRANTED ||
+                getPermissionState("android.permission.READ_MEDIA_VISUAL_USER_SELECTED") == PermissionState.GRANTED
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                 // Android 13+ (API 33+) - Granular media permissions
-                getPermissionState(Manifest.permission.READ_MEDIA_IMAGES) == "granted" ||
-                getPermissionState(Manifest.permission.READ_MEDIA_AUDIO) == "granted" ||
-                getPermissionState(Manifest.permission.READ_MEDIA_VIDEO) == "granted"
+                getPermissionState(Manifest.permission.READ_MEDIA_IMAGES) == PermissionState.GRANTED ||
+                getPermissionState(Manifest.permission.READ_MEDIA_AUDIO) == PermissionState.GRANTED ||
+                getPermissionState(Manifest.permission.READ_MEDIA_VIDEO) == PermissionState.GRANTED
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
                 // Android 10-12 (API 29-32) - Scoped storage with READ_EXTERNAL_STORAGE
-                getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE) == "granted"
+                getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE) == PermissionState.GRANTED
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
                 // Android 6-9 (API 23-28) - Traditional storage permissions
-                getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE) == "granted"
+                getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE) == PermissionState.GRANTED
             }
             else -> {
                 // Android 5.1 and below (API 22 and below) - Install-time permissions
@@ -250,7 +251,7 @@ class MediaStorePlugin : Plugin() {
             }
             else -> {
                 // Android 6-9 (API 23-28) - Traditional storage permissions required
-                getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE) == "granted"
+                getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PermissionState.GRANTED
             }
         }
     }
@@ -258,19 +259,20 @@ class MediaStorePlugin : Plugin() {
     private fun parseMediaQueryOptions(call: PluginCall): MediaStoreHelper.MediaQueryOptions {
         return MediaStoreHelper.MediaQueryOptions(
             limit = call.getInt("limit"),
-            offset = call.getInt("offset", 0),
-            sortOrder = call.getString("sortOrder", "DESC"),
-            sortBy = call.getString("sortBy", "DATE_ADDED"),
+            offset = call.getInt("offset") ?: 0,
+            sortOrder = call.getString("sortOrder") ?: "DESC",
+            sortBy = call.getString("sortBy") ?: "DATE_ADDED",
             albumName = call.getString("albumName"),
             artistName = call.getString("artistName"),
-            includeExternal = call.getBoolean("includeExternal", true)
+            includeExternal = call.getBoolean("includeExternal") ?: true
         )
     }
 
-    private fun getPermissionState(permission: String): String {
-        if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            return "granted"
+    override fun getPermissionState(permission: String): PermissionState {
+        return if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            PermissionState.GRANTED
+        } else {
+            PermissionState.DENIED
         }
-        return "denied"
     }
 }
