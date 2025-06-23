@@ -330,23 +330,52 @@ class MediaStoreHelper(private val context: Context, private val activity: Compo
         val files = mutableListOf<JSObject>()
         
         val projection = getProjectionForMediaType(mediaType)
-        val selection = buildSelection(options)
+        val selection = buildSelection(options, mediaType)
         val selectionArgs = buildSelectionArgs(options)
         val sortOrder = buildSortOrder(options)
 
-        val cursor = context.contentResolver.query(
-            contentUri,
-            projection,
-            selection,
-            selectionArgs,
-            sortOrder
-        )
+        // Include both internal and external content URIs for better coverage
+        val urisToQuery = mutableListOf(contentUri)
+        
+        // Add external volumes for Android 10+ (API 29+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.includeExternal) {
+            try {
+                val externalVolumeNames = MediaStore.getExternalVolumeNames(context)
+                externalVolumeNames.forEach { volumeName ->
+                    if (volumeName != MediaStore.VOLUME_EXTERNAL_PRIMARY) {
+                        val externalUri = when (mediaType.lowercase()) {
+                            "image" -> MediaStore.Images.Media.getContentUri(volumeName)
+                            "audio" -> MediaStore.Audio.Media.getContentUri(volumeName)
+                            "video" -> MediaStore.Video.Media.getContentUri(volumeName)
+                            else -> MediaStore.Files.getContentUri(volumeName)
+                        }
+                        urisToQuery.add(externalUri)
+                    }
+                }
+            } catch (e: Exception) {
+                // Fall back to default URI if external volumes are not accessible
+            }
+        }
 
-        cursor?.use {
-            while (it.moveToNext()) {
-                val mediaObject = JSObject()
-                populateMediaObject(mediaObject, it, mediaType)
-                files.add(mediaObject)
+        urisToQuery.forEach { uri ->
+            try {
+                val cursor = context.contentResolver.query(
+                    uri,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    sortOrder
+                )
+
+                cursor?.use {
+                    while (it.moveToNext()) {
+                        val mediaObject = JSObject()
+                        populateMediaObject(mediaObject, it, mediaType)
+                        files.add(mediaObject)
+                    }
+                }
+            } catch (e: Exception) {
+                // Continue with other URIs if one fails
             }
         }
 
@@ -464,15 +493,29 @@ class MediaStoreHelper(private val context: Context, private val activity: Compo
         }
     }
 
-    private fun buildSelection(options: MediaQueryOptions): String? {
+    private fun buildSelection(options: MediaQueryOptions, mediaType: String): String? {
         val conditions = mutableListOf<String>()
 
-        if (options.albumName != null) {
-            conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
-        }
-
-        if (options.artistName != null) {
-            conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
+        // Add media type specific conditions
+        when (mediaType.lowercase()) {
+            "audio" -> {
+                if (options.albumName != null) {
+                    conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
+                }
+                if (options.artistName != null) {
+                    conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
+                }
+                // Filter out very short audio files (likely system sounds)
+                conditions.add("${MediaStore.Audio.Media.DURATION} > 5000")
+            }
+            "image" -> {
+                // Filter out very small images (likely thumbnails)
+                conditions.add("${MediaStore.Images.Media.SIZE} > 1024")
+            }
+            "video" -> {
+                // Filter out very short videos
+                conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
+            }
         }
 
         return if (conditions.isEmpty()) null else conditions.joinToString(" AND ")

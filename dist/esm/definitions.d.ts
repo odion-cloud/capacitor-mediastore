@@ -262,9 +262,9 @@ export interface SaveMediaResponse {
 }
 export interface PermissionStatus {
     /**
-     * Read external storage permission
+     * Read external storage permission (Android 6-12)
      */
-    readExternalStorage: PermissionState;
+    readExternalStorage?: PermissionState;
     /**
      * Read media images permission (Android 13+)
      */
@@ -278,7 +278,11 @@ export interface PermissionStatus {
      */
     readMediaVideo?: PermissionState;
     /**
-     * Write external storage permission
+     * Read visual media user selected permission (Android 14+)
+     */
+    readMediaVisualUserSelected?: PermissionState;
+    /**
+     * Write external storage permission (Android 6-9)
      */
     writeExternalStorage?: PermissionState;
 }

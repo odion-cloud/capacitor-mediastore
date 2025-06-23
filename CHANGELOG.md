@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.0] - 2024-06-23
+## [1.0.0] - 2025-06-23
 
 ### Added
 - Complete Capacitor plugin for Android MediaStore API access
-- Support for Android API 21+ (Android 5.0+) with adaptive permissions
+- Support for Android API 21-35 (Android 5.0 - Android 15) with adaptive permissions
 - Full TypeScript definitions with comprehensive interfaces
 - JavaScript compatibility (ES6, CommonJS, Vanilla JS)
 - SD card and external storage access across all Android versions
@@ -14,9 +14,14 @@ All notable changes to this project will be documented in this file.
 - Album information retrieval with track counts
 - Media file querying with filtering and sorting options
 - Save media functionality with proper storage handling
+- Android 15 (API 35) latest MediaStore enhancements
+- Android 14 (API 34) visual media permissions support
 - Granular permission handling for Android 13+ (READ_MEDIA_*)
+- Multi-volume external storage support for Android 10+
 - Scoped storage support for Android 10+
 - Legacy storage compatibility for Android 5-9
+- Enhanced SD card detection and access
+- Improved media filtering (duration, size thresholds)
 - Complete documentation with usage examples
 - Vue.js integration examples
 - React integration examples
@@ -44,7 +49,8 @@ All notable changes to this project will be documented in this file.
 - Android 5 (API 21-22) - Basic support with install-time permissions
 
 ### Capacitor Compatibility
-- Capacitor 6.x - Recommended (full feature support)
+- Capacitor 7.x - Recommended (latest features, best performance)
+- Capacitor 6.x - Fully supported (excellent compatibility)
 - Capacitor 5.x - Fully supported
 - Capacitor 4.x - Supported with minor API differences
 - Capacitor 3.x - Limited support (upgrade recommended)

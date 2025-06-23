@@ -35,6 +35,9 @@ Add the following permissions to your `android/app/src/main/AndroidManifest.xml`
 <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+<!-- Visual media permissions for Android 14+ -->
+<uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 ```
 
 ## Usage
@@ -279,11 +282,12 @@ This plugin supports a wide range of Android versions with adaptive permission h
 
 | Android Version | API Level | Support Status | Features |
 |----------------|-----------|----------------|----------|
-| **Android 14** | API 34 | ✅ Full Support | Granular media permissions, full SD card access |
+| **Android 15** | API 35 | ✅ Full Support | Latest MediaStore enhancements, optimal performance |
+| **Android 14** | API 34 | ✅ Full Support | Visual media permissions, partial media access |
 | **Android 13** | API 33 | ✅ Full Support | Granular media permissions (READ_MEDIA_*) |
 | **Android 12** | API 31-32 | ✅ Full Support | Scoped storage with READ_EXTERNAL_STORAGE |
 | **Android 11** | API 30 | ✅ Full Support | Scoped storage with READ_EXTERNAL_STORAGE |
-| **Android 10** | API 29 | ✅ Full Support | Scoped storage introduction |
+| **Android 10** | API 29 | ✅ Full Support | Scoped storage introduction, multi-volume support |
 | **Android 9** | API 28 | ✅ Full Support | Traditional storage with runtime permissions |
 | **Android 8** | API 26-27 | ✅ Full Support | Traditional storage with runtime permissions |
 | **Android 7** | API 24-25 | ✅ Full Support | Traditional storage with runtime permissions |
@@ -293,14 +297,16 @@ This plugin supports a wide range of Android versions with adaptive permission h
 ### SD Card Access by Version
 
 - **Android 5-9**: Full external storage access with proper permissions
-- **Android 10+**: Scoped storage with MediaStore API (recommended approach)
+- **Android 10+**: Scoped storage with MediaStore API, multi-volume support
 - **Android 13+**: Granular media permissions for enhanced privacy
+- **Android 14+**: Visual media permissions with user-selected access
 
 ## Capacitor Version Support
 
 | Capacitor Version | Support Status | Notes |
 |-------------------|----------------|-------|
-| **Capacitor 6.x** | ✅ Recommended | Latest features, best performance |
+| **Capacitor 7.x** | ✅ Recommended | Latest features, best performance, full compatibility |
+| **Capacitor 6.x** | ✅ Fully Supported | Excellent compatibility |
 | **Capacitor 5.x** | ✅ Supported | Fully compatible |
 | **Capacitor 4.x** | ✅ Supported | Compatible with minor API differences |
 | **Capacitor 3.x** | ⚠️ Limited | Basic functionality, upgrade recommended |

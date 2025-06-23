@@ -11,9 +11,28 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     
+    <!-- Android 14+ Visual media permissions -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    
     <!-- Optional: Access to external storage volumes -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" 
                      android:minSdkVersion="30" />
+                     
+    <!-- Query for media apps (Android 11+) -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="audio/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="video/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="image/*" />
+        </intent>
+    </queries>
 
     <application>
         <!-- Plugin registration will be handled by Capacitor -->

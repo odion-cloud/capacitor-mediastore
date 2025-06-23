@@ -38,11 +38,12 @@ A comprehensive Capacitor plugin that provides full access to Android's MediaSto
 
 | Version | API | Status | SD Card | Permissions | Notes |
 |---------|-----|--------|---------|-------------|-------|
-| Android 14 | 34 | ✅ Full | Yes | Granular (READ_MEDIA_*) | Latest features |
+| Android 15 | 35 | ✅ Full | Yes | Latest MediaStore API | Optimal performance |
+| Android 14 | 34 | ✅ Full | Yes | Visual media permissions | Partial access support |
 | Android 13 | 33 | ✅ Full | Yes | Granular (READ_MEDIA_*) | Enhanced privacy |
 | Android 12 | 31-32 | ✅ Full | Yes | READ_EXTERNAL_STORAGE | Scoped storage |
 | Android 11 | 30 | ✅ Full | Yes | READ_EXTERNAL_STORAGE | Scoped storage |
-| Android 10 | 29 | ✅ Full | Yes | READ_EXTERNAL_STORAGE | Scoped storage intro |
+| Android 10 | 29 | ✅ Full | Yes | READ_EXTERNAL_STORAGE | Multi-volume support |
 | Android 9 | 28 | ✅ Full | Yes | READ_EXTERNAL_STORAGE | Traditional storage |
 | Android 8 | 26-27 | ✅ Full | Yes | Runtime permissions | Traditional storage |
 | Android 7 | 24-25 | ✅ Full | Yes | Runtime permissions | Traditional storage |
