@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm install @capacitor/mediastore
+npm install @odion-cloud/capacitor-mediastore
 npx cap sync android
 ```
 
@@ -61,7 +61,7 @@ npx cap sync android
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 const songs = ref([]);
 const albums = ref([]);
@@ -225,7 +225,7 @@ onMounted(() => {
 ```typescript
 // composables/useMusicService.ts
 import { ref } from 'vue';
-import { CapacitorMediaStore, MediaFile, Album } from '@capacitor/mediastore';
+import { CapacitorMediaStore, MediaFile, Album } from '@odion-cloud/capacitor-mediastore';
 
 export const useMusicService = () => {
   const songs = ref<MediaFile[]>([]);

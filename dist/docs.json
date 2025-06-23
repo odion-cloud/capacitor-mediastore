@@ -1,0 +1,755 @@
+{
+  "api": {
+    "name": "CapacitorMediaStorePlugin",
+    "slug": "capacitormediastoreplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "getMedias",
+        "signature": "(options?: MediaQueryOptions | undefined) => Promise<MediaResponse>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "MediaQueryOptions | undefined"
+          }
+        ],
+        "returns": "Promise<MediaResponse>",
+        "tags": [],
+        "docs": "Get all media files from device storage",
+        "complexTypes": [
+          "MediaResponse",
+          "MediaQueryOptions"
+        ],
+        "slug": "getmedias"
+      },
+      {
+        "name": "getMediasByType",
+        "signature": "(options: MediaTypeOptions) => Promise<MediaResponse>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "MediaTypeOptions"
+          }
+        ],
+        "returns": "Promise<MediaResponse>",
+        "tags": [],
+        "docs": "Get media files by specific type",
+        "complexTypes": [
+          "MediaResponse",
+          "MediaTypeOptions"
+        ],
+        "slug": "getmediasbytype"
+      },
+      {
+        "name": "getAlbums",
+        "signature": "() => Promise<AlbumResponse>",
+        "parameters": [],
+        "returns": "Promise<AlbumResponse>",
+        "tags": [],
+        "docs": "Get all albums from device",
+        "complexTypes": [
+          "AlbumResponse"
+        ],
+        "slug": "getalbums"
+      },
+      {
+        "name": "saveMedia",
+        "signature": "(options: SaveMediaOptions) => Promise<SaveMediaResponse>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "SaveMediaOptions"
+          }
+        ],
+        "returns": "Promise<SaveMediaResponse>",
+        "tags": [],
+        "docs": "Save media file to device storage",
+        "complexTypes": [
+          "SaveMediaResponse",
+          "SaveMediaOptions"
+        ],
+        "slug": "savemedia"
+      },
+      {
+        "name": "getMediaMetadata",
+        "signature": "(options: MediaMetadataOptions) => Promise<MediaMetadataResponse>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "MediaMetadataOptions"
+          }
+        ],
+        "returns": "Promise<MediaMetadataResponse>",
+        "tags": [],
+        "docs": "Get detailed metadata for a specific media file",
+        "complexTypes": [
+          "MediaMetadataResponse",
+          "MediaMetadataOptions"
+        ],
+        "slug": "getmediametadata"
+      },
+      {
+        "name": "checkPermissions",
+        "signature": "() => Promise<PermissionStatus>",
+        "parameters": [],
+        "returns": "Promise<PermissionStatus>",
+        "tags": [],
+        "docs": "Check and request necessary permissions",
+        "complexTypes": [
+          "PermissionStatus"
+        ],
+        "slug": "checkpermissions"
+      },
+      {
+        "name": "requestPermissions",
+        "signature": "() => Promise<PermissionStatus>",
+        "parameters": [],
+        "returns": "Promise<PermissionStatus>",
+        "tags": [],
+        "docs": "Request permissions for media access",
+        "complexTypes": [
+          "PermissionStatus"
+        ],
+        "slug": "requestpermissions"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "MediaResponse",
+      "slug": "mediaresponse",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "media",
+          "tags": [],
+          "docs": "Array of media files",
+          "complexTypes": [
+            "MediaFile"
+          ],
+          "type": "MediaFile[]"
+        },
+        {
+          "name": "totalCount",
+          "tags": [],
+          "docs": "Total count (useful for pagination)",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "hasMore",
+          "tags": [],
+          "docs": "Whether there are more results",
+          "complexTypes": [],
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "MediaFile",
+      "slug": "mediafile",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "id",
+          "tags": [],
+          "docs": "Unique identifier",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "tags": [],
+          "docs": "File path/URI",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "displayName",
+          "tags": [],
+          "docs": "Display name",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "size",
+          "tags": [],
+          "docs": "File size in bytes",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "mimeType",
+          "tags": [],
+          "docs": "MIME type",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "dateAdded",
+          "tags": [],
+          "docs": "Date added (timestamp)",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "dateModified",
+          "tags": [],
+          "docs": "Date modified (timestamp)",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "mediaType",
+          "tags": [],
+          "docs": "Media type",
+          "complexTypes": [
+            "MediaType"
+          ],
+          "type": "MediaType"
+        },
+        {
+          "name": "width",
+          "tags": [],
+          "docs": "Width (for images/videos)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "height",
+          "tags": [],
+          "docs": "Height (for images/videos)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "duration",
+          "tags": [],
+          "docs": "Duration in milliseconds (for audio/video)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "title",
+          "tags": [],
+          "docs": "Title (for audio files)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "artist",
+          "tags": [],
+          "docs": "Artist (for audio files)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "album",
+          "tags": [],
+          "docs": "Album (for audio files)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "albumArtist",
+          "tags": [],
+          "docs": "Album artist (for audio files)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "composer",
+          "tags": [],
+          "docs": "Composer (for audio files)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "genre",
+          "tags": [],
+          "docs": "Genre (for audio files)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "track",
+          "tags": [],
+          "docs": "Track number (for audio files)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "year",
+          "tags": [],
+          "docs": "Year (for audio files)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "bitrate",
+          "tags": [],
+          "docs": "Bitrate (for audio files)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "sampleRate",
+          "tags": [],
+          "docs": "Sample rate (for audio files)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "channels",
+          "tags": [],
+          "docs": "Number of channels (for audio files)",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "albumArtUri",
+          "tags": [],
+          "docs": "Album art URI (for audio files)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "isExternal",
+          "tags": [],
+          "docs": "Is on external storage",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        }
+      ]
+    },
+    {
+      "name": "MediaQueryOptions",
+      "slug": "mediaqueryoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "limit",
+          "tags": [],
+          "docs": "Limit the number of results",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "offset",
+          "tags": [],
+          "docs": "Offset for pagination",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "sortOrder",
+          "tags": [],
+          "docs": "Sort order (ASC or DESC)",
+          "complexTypes": [],
+          "type": "'ASC' | 'DESC' | undefined"
+        },
+        {
+          "name": "sortBy",
+          "tags": [],
+          "docs": "Sort by field",
+          "complexTypes": [],
+          "type": "'DATE_ADDED' | 'DATE_MODIFIED' | 'DISPLAY_NAME' | 'SIZE' | 'TITLE' | undefined"
+        },
+        {
+          "name": "albumName",
+          "tags": [],
+          "docs": "Filter by album name",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "artistName",
+          "tags": [],
+          "docs": "Filter by artist name",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "includeExternal",
+          "tags": [],
+          "docs": "Include external storage (SD card)",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        }
+      ]
+    },
+    {
+      "name": "MediaTypeOptions",
+      "slug": "mediatypeoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "mediaType",
+          "tags": [],
+          "docs": "Type of media to retrieve",
+          "complexTypes": [
+            "MediaType"
+          ],
+          "type": "MediaType"
+        }
+      ]
+    },
+    {
+      "name": "AlbumResponse",
+      "slug": "albumresponse",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "albums",
+          "tags": [],
+          "docs": "Array of albums",
+          "complexTypes": [
+            "Album"
+          ],
+          "type": "Album[]"
+        },
+        {
+          "name": "totalCount",
+          "tags": [],
+          "docs": "Total count",
+          "complexTypes": [],
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "name": "Album",
+      "slug": "album",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "id",
+          "tags": [],
+          "docs": "Album ID",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "tags": [],
+          "docs": "Album name",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "trackCount",
+          "tags": [],
+          "docs": "Number of tracks",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "firstTrackId",
+          "tags": [],
+          "docs": "First track ID",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "albumArtUri",
+          "tags": [],
+          "docs": "Album art URI",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "artist",
+          "tags": [],
+          "docs": "Artist name",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "SaveMediaResponse",
+      "slug": "savemediaresponse",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "success",
+          "tags": [],
+          "docs": "Success status",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "uri",
+          "tags": [],
+          "docs": "URI of saved file",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "error",
+          "tags": [],
+          "docs": "Error message if failed",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "SaveMediaOptions",
+      "slug": "savemediaoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "data",
+          "tags": [],
+          "docs": "Base64 encoded data or file URI",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "fileName",
+          "tags": [],
+          "docs": "File name",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "mediaType",
+          "tags": [],
+          "docs": "Media type",
+          "complexTypes": [
+            "MediaType"
+          ],
+          "type": "MediaType"
+        },
+        {
+          "name": "albumName",
+          "tags": [],
+          "docs": "Album name (optional)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "relativePath",
+          "tags": [],
+          "docs": "Relative path within the media type directory",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "MediaMetadataResponse",
+      "slug": "mediametadataresponse",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "media",
+          "tags": [],
+          "docs": "Media file with full metadata",
+          "complexTypes": [
+            "MediaFile"
+          ],
+          "type": "MediaFile"
+        }
+      ]
+    },
+    {
+      "name": "MediaMetadataOptions",
+      "slug": "mediametadataoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "filePath",
+          "tags": [],
+          "docs": "File path or URI of the media file",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "PermissionStatus",
+      "slug": "permissionstatus",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "readExternalStorage",
+          "tags": [],
+          "docs": "Read external storage permission (Android 6-12)",
+          "complexTypes": [
+            "PermissionState"
+          ],
+          "type": "PermissionState"
+        },
+        {
+          "name": "readMediaImages",
+          "tags": [],
+          "docs": "Read media images permission (Android 13+)",
+          "complexTypes": [
+            "PermissionState"
+          ],
+          "type": "PermissionState"
+        },
+        {
+          "name": "readMediaAudio",
+          "tags": [],
+          "docs": "Read media audio permission (Android 13+)",
+          "complexTypes": [
+            "PermissionState"
+          ],
+          "type": "PermissionState"
+        },
+        {
+          "name": "readMediaVideo",
+          "tags": [],
+          "docs": "Read media video permission (Android 13+)",
+          "complexTypes": [
+            "PermissionState"
+          ],
+          "type": "PermissionState"
+        },
+        {
+          "name": "readMediaVisualUserSelected",
+          "tags": [],
+          "docs": "Read visual media user selected permission (Android 14+)",
+          "complexTypes": [
+            "PermissionState"
+          ],
+          "type": "PermissionState"
+        },
+        {
+          "name": "writeExternalStorage",
+          "tags": [],
+          "docs": "Write external storage permission (Android 6-9)",
+          "complexTypes": [
+            "PermissionState"
+          ],
+          "type": "PermissionState"
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "MediaType",
+      "slug": "mediatype",
+      "members": [
+        {
+          "name": "IMAGE",
+          "value": "'image'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "AUDIO",
+          "value": "'audio'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "VIDEO",
+          "value": "'video'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "DOCUMENT",
+          "value": "'document'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "ALL",
+          "value": "'all'",
+          "tags": [],
+          "docs": ""
+        }
+      ]
+    },
+    {
+      "name": "PermissionState",
+      "slug": "permissionstate",
+      "members": [
+        {
+          "name": "GRANTED",
+          "value": "'granted'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "DENIED",
+          "value": "'denied'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "PROMPT",
+          "value": "'prompt'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "PROMPT_WITH_RATIONALE",
+          "value": "'prompt-with-rationale'",
+          "tags": [],
+          "docs": ""
+        }
+      ]
+    }
+  ],
+  "typeAliases": [
+    {
+      "name": "PermissionState",
+      "slug": "permissionstate",
+      "docs": "",
+      "types": [
+        {
+          "text": "'prompt'",
+          "complexTypes": []
+        },
+        {
+          "text": "'prompt-with-rationale'",
+          "complexTypes": []
+        },
+        {
+          "text": "'granted'",
+          "complexTypes": []
+        },
+        {
+          "text": "'denied'",
+          "complexTypes": []
+        }
+      ]
+    }
+  ],
+  "pluginConfigs": []
+}

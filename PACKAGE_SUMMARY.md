@@ -67,7 +67,7 @@ A comprehensive Capacitor plugin that provides full access to Android's MediaSto
 
 ### TypeScript
 ```typescript
-import { CapacitorMediaStore, MediaFile } from '@capacitor/mediastore';
+import { CapacitorMediaStore, MediaFile } from '@odion-cloud/capacitor-mediastore';
 
 const songs: MediaFile[] = await CapacitorMediaStore.getMediasByType({
   mediaType: 'audio',
@@ -78,7 +78,7 @@ const songs: MediaFile[] = await CapacitorMediaStore.getMediasByType({
 
 ### JavaScript (ES6)
 ```javascript
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 const songs = await CapacitorMediaStore.getMediasByType({
   mediaType: 'audio',
@@ -88,7 +88,7 @@ const songs = await CapacitorMediaStore.getMediasByType({
 
 ### JavaScript (CommonJS)
 ```javascript
-const { CapacitorMediaStore } = require('@capacitor/mediastore');
+const { CapacitorMediaStore } = require('@odion-cloud/capacitor-mediastore');
 
 const songs = await CapacitorMediaStore.getMediasByType({
   mediaType: 'audio',
@@ -100,7 +100,7 @@ const songs = await CapacitorMediaStore.getMediasByType({
 
 ### For New Projects
 ```bash
-npm install @capacitor/mediastore
+npm install @odion-cloud/capacitor-mediastore
 npx cap sync android
 ```
 

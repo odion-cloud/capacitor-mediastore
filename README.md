@@ -1,4 +1,4 @@
-# @capacitor/mediastore
+# @odion-cloud/capacitor-mediastore
 
 A Capacitor plugin that provides comprehensive access to Android MediaStore API for media file access and metadata retrieval. This plugin is specifically designed to overcome the limitations of Capacitor's filesystem API, particularly for accessing SD card storage and retrieving rich media metadata.
 
@@ -16,7 +16,7 @@ A Capacitor plugin that provides comprehensive access to Android MediaStore API 
 ## Installation
 
 ```bash
-npm install @capacitor/mediastore
+npm install @odion-cloud/capacitor-mediastore
 npx cap sync
 ```
 
@@ -43,7 +43,7 @@ Add the following permissions to your `android/app/src/main/AndroidManifest.xml`
 ## Usage
 
 ```typescript
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 // Request permissions first
 const permissions = await CapacitorMediaStore.requestPermissions();
@@ -237,7 +237,7 @@ This plugin uses Android's MediaStore API which provides:
 ## Example: Building a Music Player
 
 ```typescript
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 class MusicService {
   async loadAllSongs() {
@@ -324,10 +324,10 @@ This plugin works with:
 
 ```javascript
 // ES6 Import
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 // CommonJS Require
-const { CapacitorMediaStore } = require('@capacitor/mediastore');
+const { CapacitorMediaStore } = require('@odion-cloud/capacitor-mediastore');
 
 // Get all songs including SD card
 const songs = await CapacitorMediaStore.getMediasByType({
@@ -369,7 +369,7 @@ const files = await Filesystem.readdir({
 ### MediaStore Advantages
 ```javascript
 // ✅ MediaStore Plugin - Full access
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 // Accesses both internal and SD card storage
 // Rich metadata included

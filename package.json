@@ -1,20 +1,72 @@
 {
-  "name": "workspace",
+  "name": "@odion-cloud/capacitor-mediastore",
   "version": "1.0.0",
   "description": "A Capacitor plugin that provides comprehensive access to Android MediaStore API for media file access and metadata retrieval. This plugin is specifically designed to overcome the limitations of Capacitor's filesystem API, particularly for accessing SD card storage and retrieving rich media metadata.",
-  "main": "rollup.config.js",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "unpkg": "dist/plugin.js",
+  "files": [
+    "android/src/main/",
+    "android/build.gradle",
+    "dist/",
+    "ios/Plugin/",
+    "CapacitorMediaStore.podspec"
+  ],
+  "author": "Kelly Igiogbe <liwizyk@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/odion-cloud/capacitor-mediastore.git"
+  },
+  "bugs": {
+    "url": "https://github.com/odion-cloud/capacitor-mediastore/issues"
+  },
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "android",
+    "mediastore",
+    "media",
+    "audio",
+    "video",
+    "images",
+    "metadata",
+    "sd-card",
+    "external-storage"
+  ],
   "scripts": {
+    "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
+    "verify:ios": "cd ios && pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin -destination generic/platform=iOS",
+    "verify:android": "cd android && ./gradlew clean build test && cd ..",
+    "verify:web": "npm run build",
+    "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.js",
+    "clean": "rimraf ./dist",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "docgen": "docgen --api CapacitorMediaStorePlugin --output-readme README.md --output-json dist/docs.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "devDependencies": {
+    "@capacitor/docgen": "^0.0.18",
+    "rimraf": "^3.0.2"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^6.0.0"
+  },
   "dependencies": {
     "@capacitor/cli": "^7.4.0",
-    "@capacitor/core": "^7.4.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "rollup": "^2.79.2",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^5.8.3"
+  },
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    },
+    "android": {
+      "src": "android"
+    }
   }
 }

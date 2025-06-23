@@ -3,7 +3,7 @@
 ## Installation for JavaScript Projects
 
 ```bash
-npm install @capacitor/mediastore
+npm install @odion-cloud/capacitor-mediastore
 npx cap sync android
 ```
 
@@ -11,7 +11,7 @@ npx cap sync android
 
 ```javascript
 // Import the plugin
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 // Request permissions first
 async function setupPermissions() {
@@ -127,7 +127,7 @@ async function getSongsFromAlbum(albumName) {
 <head>
     <title>Music Player</title>
     <script type="module">
-        import { CapacitorMediaStore } from '@capacitor/mediastore';
+        import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
         
         let allSongs = [];
         let currentPage = 0;
@@ -292,7 +292,7 @@ Year: ${metadata.year || 'Unknown'}
 
 ```jsx
 import React, { useState, useEffect } from 'react';
-import { CapacitorMediaStore } from '@capacitor/mediastore';
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
 function MusicPlayer() {
   const [songs, setSongs] = useState([]);
@@ -459,7 +459,7 @@ export default MusicPlayer;
 
 ```javascript
 // build-music-library.js
-const { CapacitorMediaStore } = require('@capacitor/mediastore');
+const { CapacitorMediaStore } = require('@odion-cloud/capacitor-mediastore');
 
 async function buildMusicLibrary() {
   try {
