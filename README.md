@@ -273,11 +273,121 @@ class MusicService {
 }
 ```
 
+## Android Version Support
+
+This plugin supports a wide range of Android versions with adaptive permission handling:
+
+| Android Version | API Level | Support Status | Features |
+|----------------|-----------|----------------|----------|
+| **Android 14** | API 34 | ✅ Full Support | Granular media permissions, full SD card access |
+| **Android 13** | API 33 | ✅ Full Support | Granular media permissions (READ_MEDIA_*) |
+| **Android 12** | API 31-32 | ✅ Full Support | Scoped storage with READ_EXTERNAL_STORAGE |
+| **Android 11** | API 30 | ✅ Full Support | Scoped storage with READ_EXTERNAL_STORAGE |
+| **Android 10** | API 29 | ✅ Full Support | Scoped storage introduction |
+| **Android 9** | API 28 | ✅ Full Support | Traditional storage with runtime permissions |
+| **Android 8** | API 26-27 | ✅ Full Support | Traditional storage with runtime permissions |
+| **Android 7** | API 24-25 | ✅ Full Support | Traditional storage with runtime permissions |
+| **Android 6** | API 23 | ✅ Full Support | Runtime permissions introduced |
+| **Android 5** | API 21-22 | ✅ Basic Support | Install-time permissions, limited SD card access |
+
+### SD Card Access by Version
+
+- **Android 5-9**: Full external storage access with proper permissions
+- **Android 10+**: Scoped storage with MediaStore API (recommended approach)
+- **Android 13+**: Granular media permissions for enhanced privacy
+
+## Capacitor Version Support
+
+| Capacitor Version | Support Status | Notes |
+|-------------------|----------------|-------|
+| **Capacitor 6.x** | ✅ Recommended | Latest features, best performance |
+| **Capacitor 5.x** | ✅ Supported | Fully compatible |
+| **Capacitor 4.x** | ✅ Supported | Compatible with minor API differences |
+| **Capacitor 3.x** | ⚠️ Limited | Basic functionality, upgrade recommended |
+
+## JavaScript Compatibility
+
+This plugin works with:
+- ✅ **TypeScript** - Full type definitions included
+- ✅ **JavaScript (ES6+)** - Modern JavaScript with import/export
+- ✅ **CommonJS** - Node.js style require()
+- ✅ **Vanilla JavaScript** - No framework required
+- ✅ **React/Vue/Angular** - All major frameworks supported
+
+### JavaScript Usage Example
+
+```javascript
+// ES6 Import
+import { CapacitorMediaStore } from '@capacitor/mediastore';
+
+// CommonJS Require
+const { CapacitorMediaStore } = require('@capacitor/mediastore');
+
+// Get all songs including SD card
+const songs = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  includeExternal: true // Enables SD card access
+});
+
+console.log(`Found ${songs.totalCount} songs`);
+songs.media.forEach(song => {
+  console.log(`${song.title} - ${song.artist} ${song.isExternal ? '(SD)' : ''}`);
+});
+```
+
 ## Platform Support
 
-- ✅ **Android**: Full implementation using MediaStore API
+- ✅ **Android**: Full implementation using MediaStore API (API 21+)
 - ❌ **iOS**: Not supported (iOS uses different media access patterns)
 - ❌ **Web**: Not supported (browser security restrictions)
+
+## Migration from Capacitor Filesystem
+
+If you're currently using Capacitor Filesystem for media access, here's why you should migrate:
+
+### Filesystem Limitations
+```javascript
+// ❌ Capacitor Filesystem - Limited access
+import { Filesystem } from '@capacitor/filesystem';
+
+// Cannot access SD card reliably
+// No metadata (artist, album, duration)
+// Slow directory scanning
+// No album organization
+const files = await Filesystem.readdir({
+  path: 'Music',
+  directory: Directory.ExternalStorage
+});
+```
+
+### MediaStore Advantages
+```javascript
+// ✅ MediaStore Plugin - Full access
+import { CapacitorMediaStore } from '@capacitor/mediastore';
+
+// Accesses both internal and SD card storage
+// Rich metadata included
+// Fast indexed queries
+// Album organization
+const songs = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  includeExternal: true,
+  sortBy: 'TITLE'
+});
+```
+
+## Installation Requirements
+
+### Minimum Requirements
+- **Android**: API 21 (Android 5.0) or higher
+- **Capacitor**: 3.0 or higher (6.0 recommended)
+- **Node.js**: 14.0 or higher
+- **NPM**: 6.0 or higher
+
+### Recommended Setup
+- **Android**: API 29+ for best SD card compatibility
+- **Capacitor**: 6.0 for latest features
+- **Target SDK**: 34 (Android 14)
 
 ## License
 

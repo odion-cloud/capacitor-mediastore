@@ -175,6 +175,7 @@ class MediaStoreHelper(private val context: Context, private val activity: Compo
                 put(MediaStore.MediaColumns.MIME_TYPE, getMimeType(mediaType, fileName))
                 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    // Android 10+ (API 29+) - Use scoped storage
                     val directory = when (mediaType.lowercase()) {
                         "image" -> Environment.DIRECTORY_PICTURES
                         "audio" -> Environment.DIRECTORY_MUSIC
@@ -192,6 +193,29 @@ class MediaStoreHelper(private val context: Context, private val activity: Compo
                     
                     put(MediaStore.MediaColumns.RELATIVE_PATH, path)
                     put(MediaStore.MediaColumns.IS_PENDING, 1)
+                } else {
+                    // Android 5-9 (API 21-28) - Use legacy external storage
+                    val directory = when (mediaType.lowercase()) {
+                        "image" -> Environment.DIRECTORY_PICTURES
+                        "audio" -> Environment.DIRECTORY_MUSIC
+                        "video" -> Environment.DIRECTORY_MOVIES
+                        else -> Environment.DIRECTORY_DOCUMENTS
+                    }
+                    
+                    val externalDir = Environment.getExternalStoragePublicDirectory(directory)
+                    val targetDir = if (albumName != null) {
+                        File(externalDir, albumName)
+                    } else if (relativePath != null) {
+                        File(externalDir, relativePath)
+                    } else {
+                        externalDir
+                    }
+                    
+                    if (!targetDir.exists()) {
+                        targetDir.mkdirs()
+                    }
+                    
+                    put(MediaStore.MediaColumns.DATA, File(targetDir, fileName).absolutePath)
                 }
             }
 
