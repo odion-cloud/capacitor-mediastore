@@ -1,0 +1,7 @@
+{
+  "plugins": {
+    "CapacitorMediaStore": {
+      "androidPackage": "com.capacitor.mediastore.MediaStorePlugin"
+    }
+  }
+}

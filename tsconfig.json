@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": ["es6", "dom"],
+    "target": "es5",
+    "declaration": true,
+    "declarationDir": "./dist/esm",
+    "outDir": "./dist/esm",
+    "moduleResolution": "node",
+    "strict": true,
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}
