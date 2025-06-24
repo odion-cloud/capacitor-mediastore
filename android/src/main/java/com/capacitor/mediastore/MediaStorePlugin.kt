@@ -141,22 +141,22 @@ class MediaStorePlugin : Plugin() {
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
                 // Android 14+ (API 34+) - Visual media permissions
-                result.put("readMediaImages", getPermissionState(Manifest.permission.READ_MEDIA_IMAGES).toString())
-                result.put("readMediaAudio", getPermissionState(Manifest.permission.READ_MEDIA_AUDIO).toString())
-                result.put("readMediaVideo", getPermissionState(Manifest.permission.READ_MEDIA_VIDEO).toString())
-                result.put("readMediaVisualUserSelected", getPermissionState("android.permission.READ_MEDIA_VISUAL_USER_SELECTED").toString())
+                result.put("readMediaImages", getPermissionState("readMediaImages").toString())
+                result.put("readMediaAudio", getPermissionState("readMediaAudio").toString())
+                result.put("readMediaVideo", getPermissionState("readMediaVideo").toString())
+                result.put("readMediaVisualUserSelected", getPermissionState("readMediaVisualUserSelected").toString())
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                 // Android 13+ (API 33+) - Granular media permissions
-                result.put("readMediaImages", getPermissionState(Manifest.permission.READ_MEDIA_IMAGES).toString())
-                result.put("readMediaAudio", getPermissionState(Manifest.permission.READ_MEDIA_AUDIO).toString())
-                result.put("readMediaVideo", getPermissionState(Manifest.permission.READ_MEDIA_VIDEO).toString())
+                result.put("readMediaImages", getPermissionState("readMediaImages").toString())
+                result.put("readMediaAudio", getPermissionState("readMediaAudio").toString())
+                result.put("readMediaVideo", getPermissionState("readMediaVideo").toString())
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
                 // Android 6+ (API 23+) - Runtime permissions
-                result.put("readExternalStorage", getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE).toString())
+                result.put("readExternalStorage", getPermissionState("readExternalStorage").toString())
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    result.put("writeExternalStorage", getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE).toString())
+                    result.put("writeExternalStorage", getPermissionState("writeExternalStorage").toString())
                 }
             }
             else -> {
@@ -173,60 +173,60 @@ class MediaStorePlugin : Plugin() {
     override fun requestPermissions(call: PluginCall) {
         // Get requested permission types from options
         val requestedTypes = call.getArray("types")
-        val permissions = mutableListOf<String>()
+        val aliasesToRequest = mutableListOf<String>()
         
         if (requestedTypes != null && requestedTypes.length() > 0) {
-            // Request specific permission types
+            // Request specific permission types using aliases
             for (i in 0 until requestedTypes.length()) {
                 when (requestedTypes.getString(i)?.lowercase()) {
                     "images" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
+                            aliasesToRequest.add("readMediaImages")
                         } else {
-                            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            aliasesToRequest.add("readExternalStorage")
                         }
                     }
                     "audio" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            permissions.add(Manifest.permission.READ_MEDIA_AUDIO)
+                            aliasesToRequest.add("readMediaAudio")
                         } else {
-                            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            aliasesToRequest.add("readExternalStorage")
                         }
                     }
                     "video" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
+                            aliasesToRequest.add("readMediaVideo")
                         } else {
-                            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            aliasesToRequest.add("readExternalStorage")
                         }
                     }
                 }
             }
         } else {
-            // Request all permissions
+            // Request all permissions using aliases
             when {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
                     // Android 14+ (API 34+) - Visual media permissions
-                    permissions.addAll(listOf(
-                        Manifest.permission.READ_MEDIA_IMAGES,
-                        Manifest.permission.READ_MEDIA_AUDIO,
-                        Manifest.permission.READ_MEDIA_VIDEO,
-                        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+                    aliasesToRequest.addAll(listOf(
+                        "readMediaImages",
+                        "readMediaAudio", 
+                        "readMediaVideo",
+                        "readMediaVisualUserSelected"
                     ))
                 }
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                     // Android 13+ (API 33+) - Granular media permissions
-                    permissions.addAll(listOf(
-                        Manifest.permission.READ_MEDIA_IMAGES,
-                        Manifest.permission.READ_MEDIA_AUDIO,
-                        Manifest.permission.READ_MEDIA_VIDEO
+                    aliasesToRequest.addAll(listOf(
+                        "readMediaImages",
+                        "readMediaAudio",
+                        "readMediaVideo"
                     ))
                 }
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
                     // Android 6+ (API 23+) - Runtime permissions
-                    permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    aliasesToRequest.add("readExternalStorage")
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        aliasesToRequest.add("writeExternalStorage")
                     }
                 }
                 else -> {
@@ -237,10 +237,10 @@ class MediaStorePlugin : Plugin() {
             }
         }
 
-        // Remove duplicates and request permissions
-        val uniquePermissions = permissions.distinct().toTypedArray()
-        if (uniquePermissions.isNotEmpty()) {
-            requestPermissionForAliases(uniquePermissions, call, "permissionCallback")
+        // Remove duplicates and request permissions using aliases
+        val uniqueAliases = aliasesToRequest.distinct().toTypedArray()
+        if (uniqueAliases.isNotEmpty()) {
+            requestPermissionForAliases(uniqueAliases, call, "permissionCallback")
         } else {
             checkPermissions(call)
         }
@@ -255,24 +255,24 @@ class MediaStorePlugin : Plugin() {
         return when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
                 // Android 14+ (API 34+) - Visual media permissions
-                getPermissionState(Manifest.permission.READ_MEDIA_IMAGES) == PermissionState.GRANTED ||
-                getPermissionState(Manifest.permission.READ_MEDIA_AUDIO) == PermissionState.GRANTED ||
-                getPermissionState(Manifest.permission.READ_MEDIA_VIDEO) == PermissionState.GRANTED ||
-                getPermissionState("android.permission.READ_MEDIA_VISUAL_USER_SELECTED") == PermissionState.GRANTED
+                getPermissionState("readMediaImages") == PermissionState.GRANTED ||
+                getPermissionState("readMediaAudio") == PermissionState.GRANTED ||
+                getPermissionState("readMediaVideo") == PermissionState.GRANTED ||
+                getPermissionState("readMediaVisualUserSelected") == PermissionState.GRANTED
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                 // Android 13+ (API 33+) - Granular media permissions
-                getPermissionState(Manifest.permission.READ_MEDIA_IMAGES) == PermissionState.GRANTED ||
-                getPermissionState(Manifest.permission.READ_MEDIA_AUDIO) == PermissionState.GRANTED ||
-                getPermissionState(Manifest.permission.READ_MEDIA_VIDEO) == PermissionState.GRANTED
+                getPermissionState("readMediaImages") == PermissionState.GRANTED ||
+                getPermissionState("readMediaAudio") == PermissionState.GRANTED ||
+                getPermissionState("readMediaVideo") == PermissionState.GRANTED
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
                 // Android 10-12 (API 29-32) - Scoped storage with READ_EXTERNAL_STORAGE
-                getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE) == PermissionState.GRANTED
+                getPermissionState("readExternalStorage") == PermissionState.GRANTED
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
                 // Android 6-9 (API 23-28) - Traditional storage permissions
-                getPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE) == PermissionState.GRANTED
+                getPermissionState("readExternalStorage") == PermissionState.GRANTED
             }
             else -> {
                 // Android 5.1 and below (API 22 and below) - Install-time permissions
@@ -289,7 +289,7 @@ class MediaStorePlugin : Plugin() {
             }
             else -> {
                 // Android 6-9 (API 23-28) - Traditional storage permissions required
-                getPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PermissionState.GRANTED
+                getPermissionState("writeExternalStorage") == PermissionState.GRANTED
             }
         }
     }
@@ -306,11 +306,7 @@ class MediaStorePlugin : Plugin() {
         )
     }
 
-    override fun getPermissionState(permission: String): PermissionState {
-        return if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            PermissionState.GRANTED
-        } else {
-            PermissionState.DENIED
-        }
+    override fun getPermissionState(alias: String): PermissionState {
+        return super.getPermissionState(alias)
     }
 }
