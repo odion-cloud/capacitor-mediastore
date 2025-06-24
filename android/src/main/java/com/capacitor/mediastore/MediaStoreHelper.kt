@@ -91,16 +91,17 @@ class MediaStoreHelper(private val context: Context) {
         val mediaArray = JSArray()
 
         val files = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Android 13+ (API 33+) - Use specific content URIs for better performance
-            when (mediaType.lowercase()) {
-                "image" -> queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, mediaType, options)
-                "audio" -> queryMediaStore(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaType, options)
-                "video" -> queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaType, options)
-                "document" -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
-                else -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
+            // Android 13+ (API 33+) - Use specific content URIs
+            val contentUri = when (mediaType.lowercase()) {
+                "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                "document" -> MediaStore.Files.getContentUri("external")
+                else -> MediaStore.Files.getContentUri("external")
             }
+            queryMediaStore(contentUri, mediaType, options)
         } else {
-            // Android 12 and below (API 32 and below) - Use Files content URI for better compatibility
+            // Android 12 and below (API 32 and below) - Use Files content URI for broader access
             queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
         }
         
@@ -344,18 +345,9 @@ class MediaStoreHelper(private val context: Context) {
         val files = mutableListOf<JSObject>()
         
         val projection = getProjectionForMediaType(mediaType)
-        val selection = buildSelection(options, mediaType, contentUri)
-        val selectionArgs = buildSelectionArgs(options, mediaType, contentUri)
+        val selection = buildSelection(options, mediaType)
+        val selectionArgs = buildSelectionArgs(options)
         val sortOrder = buildSortOrder(options)
-
-        // Debug logging for Android 9 troubleshooting
-        android.util.Log.d("MediaStoreHelper", "=== MediaStore Query Debug ===")
-        android.util.Log.d("MediaStoreHelper", "Content URI: $contentUri")
-        android.util.Log.d("MediaStoreHelper", "Media Type: $mediaType")
-        android.util.Log.d("MediaStoreHelper", "Selection: $selection")
-        android.util.Log.d("MediaStoreHelper", "Selection Args: ${selectionArgs?.joinToString(", ")}")
-        android.util.Log.d("MediaStoreHelper", "Sort Order: $sortOrder")
-        android.util.Log.d("MediaStoreHelper", "Android Version: ${Build.VERSION.SDK_INT}")
 
         // Include both internal and external content URIs for better coverage
         val urisToQuery = mutableListOf(contentUri)
@@ -382,7 +374,6 @@ class MediaStoreHelper(private val context: Context) {
 
         urisToQuery.forEach { uri ->
             try {
-                android.util.Log.d("MediaStoreHelper", "Querying URI: $uri")
                 val cursor = context.contentResolver.query(
                     uri,
                     projection,
@@ -392,8 +383,6 @@ class MediaStoreHelper(private val context: Context) {
                 )
 
                 cursor?.use {
-                    val count = it.count
-                    android.util.Log.d("MediaStoreHelper", "Found $count files in URI: $uri")
                     while (it.moveToNext()) {
                         val mediaObject = JSObject()
                         populateMediaObject(mediaObject, it, mediaType)
@@ -401,55 +390,9 @@ class MediaStoreHelper(private val context: Context) {
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MediaStoreHelper", "Error querying URI $uri: ${e.message}")
                 // Continue with other URIs if one fails
             }
         }
-
-        android.util.Log.d("MediaStoreHelper", "Total files found: ${files.size}")
-
-        // Fallback query for debugging on Android 9 - if no files found and querying audio
-        if (files.isEmpty() && mediaType.lowercase() == "audio" && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            android.util.Log.d("MediaStoreHelper", "=== Fallback Query: No Selection Filter ===")
-            try {
-                val fallbackCursor = context.contentResolver.query(
-                    contentUri,
-                    projection,
-                    null, // No selection filter
-                    null, // No selection args
-                    sortOrder
-                )
-
-                fallbackCursor?.use {
-                    val fallbackCount = it.count
-                    android.util.Log.d("MediaStoreHelper", "Fallback query found $fallbackCount total files")
-                    
-                    // Check first few files to see their MIME types
-                    var checkedCount = 0
-                    while (it.moveToNext() && checkedCount < 10) {
-                        val mimeTypeColumn = it.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
-                        val displayNameColumn = it.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
-                        if (mimeTypeColumn >= 0 && displayNameColumn >= 0) {
-                            val mimeType = it.getString(mimeTypeColumn)
-                            val displayName = it.getString(displayNameColumn)
-                            android.util.Log.d("MediaStoreHelper", "File $checkedCount: $displayName, MIME: $mimeType")
-                            
-                            // If this is an audio file, add it to results for testing
-                            if (mimeType?.startsWith("audio/") == true) {
-                                val mediaObject = JSObject()
-                                populateMediaObject(mediaObject, it, mediaType)
-                                files.add(mediaObject)
-                            }
-                        }
-                        checkedCount++
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("MediaStoreHelper", "Fallback query failed: ${e.message}")
-            }
-        }
-
-        android.util.Log.d("MediaStoreHelper", "=== End MediaStore Query Debug ===")
 
         return files
     }
@@ -565,54 +508,44 @@ class MediaStoreHelper(private val context: Context) {
         }
     }
 
-    private fun buildSelection(options: MediaQueryOptions, mediaType: String, contentUri: Uri): String? {
+    private fun buildSelection(options: MediaQueryOptions, mediaType: String): String? {
         val conditions = mutableListOf<String>()
-        val isFilesContentUri = contentUri.toString().contains("files")
-        val isAudioContentUri = contentUri.toString().contains("audio")
-        val isVideoContentUri = contentUri.toString().contains("video")
 
-        // Add media type filtering
+        // Add media type filtering for Files content URI (Android 12 and below)
         when (mediaType.lowercase()) {
             "image" -> {
-                if (isFilesContentUri) {
-                    // Use MediaStore constants for better compatibility on older Android versions
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE}")
                 }
                 conditions.add("${MediaStore.MediaColumns.SIZE} > 1024")
             }
             "audio" -> {
-                if (isFilesContentUri) {
-                    // Use MediaStore constants for better compatibility on older Android versions
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO}")
-                } else if (isAudioContentUri) {
-                    // Use audio-specific filters when querying Audio content URI
-                    if (options.albumName != null) {
-                        conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
-                    }
-                    if (options.artistName != null) {
-                        conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
-                    }
-                    // Don't add duration filter to avoid excluding valid audio files
                 }
+                if (options.albumName != null) {
+                    conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
+                }
+                if (options.artistName != null) {
+                    conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
+                }
+                conditions.add("${MediaStore.Audio.Media.DURATION} > 5000")
             }
             "video" -> {
-                if (isFilesContentUri) {
-                    // Use MediaStore constants for better compatibility on older Android versions
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO}")
-                } else if (isVideoContentUri) {
-                    // Use video-specific filters when querying Video content URI
-                    conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
                 }
+                conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
             }
             "document" -> {
+                conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE}")
                 conditions.add("(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')")
                 conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'audio/%'")
                 conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'video/%'")
                 conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'image/%'")
             }
             "all" -> {
-                if (isFilesContentUri) {
-                    // Include all media types using MediaStore constants for better compatibility
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     conditions.add("(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE} OR " +
                                  "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO} OR " +
                                  "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO} OR " +
@@ -625,19 +558,15 @@ class MediaStoreHelper(private val context: Context) {
         return if (conditions.isEmpty()) null else conditions.joinToString(" AND ")
     }
 
-    private fun buildSelectionArgs(options: MediaQueryOptions, mediaType: String, contentUri: Uri): Array<String>? {
+    private fun buildSelectionArgs(options: MediaQueryOptions): Array<String>? {
         val args = mutableListOf<String>()
-        val isAudioContentUri = contentUri.toString().contains("audio")
 
-        // Add album/artist arguments when querying audio and using Audio content URI
-        if (mediaType.lowercase() == "audio" && isAudioContentUri) {
-            if (options.albumName != null) {
-                args.add(options.albumName)
-            }
+        if (options.albumName != null) {
+            args.add(options.albumName)
+        }
 
-            if (options.artistName != null) {
-                args.add(options.artistName)
-            }
+        if (options.artistName != null) {
+            args.add(options.artistName)
         }
 
         return if (args.isEmpty()) null else args.toTypedArray()
