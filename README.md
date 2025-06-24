@@ -12,6 +12,25 @@ A Capacitor plugin that provides comprehensive access to Android MediaStore API 
 - ✅ Get album information
 - ✅ Proper Android permissions handling
 - ✅ TypeScript definitions included
+- **Cross-version compatibility**: Handles different Android permission models (Android 6-14+)
+- **Media type support**: Images, videos, audio files, and documents
+- **Advanced querying**: Pagination, sorting, filtering by album/artist
+- **Metadata extraction**: Full metadata for audio/video files
+- **Media saving**: Save files to appropriate directories
+- **Android 13+ SAF support**: Proper document handling for Android 13+ using Storage Access Framework
+- **Fixed audio retrieval**: Resolved audio file access issues on Android 12 and below
+
+## Recent Fixes
+
+### ✅ Fixed Issues:
+
+1. **Android 12 and below**: `getMediasByType()` with `audio` type now works correctly
+2. **Android 13 and above**: Document access now properly guides users to use Storage Access Framework (SAF)
+
+### Platform-Specific Behavior:
+
+- **Android 12 and below**: Uses MediaStore for all media types including documents
+- **Android 13 and above**: Uses MediaStore for images/audio/video, requires SAF for documents
 
 ## Installation
 
@@ -501,3 +520,285 @@ const songs = await CapacitorMediaStore.getMediasByType({
 ## License
 
 MIT
+
+## Quick Start
+
+### Check Android Version and SAF Availability
+
+```typescript
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
+
+// Check if SAF should be used for documents
+const safStatus = await CapacitorMediaStore.shouldUseSAFForDocuments();
+console.log('Should use SAF:', safStatus.shouldUseSAF);
+console.log('Android version:', safStatus.androidVersion);
+```
+
+### Request Permissions
+
+```typescript
+// Request all permissions
+const permissions = await CapacitorMediaStore.requestPermissions();
+
+// Request specific permissions
+const permissions = await CapacitorMediaStore.requestPermissions({
+  types: ['images', 'audio', 'video']
+});
+```
+
+### Get Media Files
+
+```typescript
+// Get all media files
+const allMedia = await CapacitorMediaStore.getMedias({
+  limit: 20,
+  offset: 0,
+  sortOrder: 'DESC',
+  sortBy: 'DATE_ADDED'
+});
+
+// Get specific media type
+const audioFiles = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  limit: 50
+});
+
+const videoFiles = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'video'
+});
+
+const imageFiles = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'image'
+});
+```
+
+### Document Handling
+
+#### Android 12 and Below
+```typescript
+// Documents work through MediaStore
+const documents = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'document'
+});
+```
+
+#### Android 13 and Above
+```typescript
+// Check if SAF is needed
+const safStatus = await CapacitorMediaStore.shouldUseSAFForDocuments();
+
+if (safStatus.shouldUseSAF) {
+  // Documents require Storage Access Framework
+  console.log('Use SAF for documents on Android 13+');
+  
+  // Get guidance for implementing SAF
+  const intentInfo = await CapacitorMediaStore.createDocumentPickerIntent();
+  console.log('Intent guidance:', intentInfo.guidance);
+  
+  // In your Activity, implement:
+  // Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+  // intent.addCategory(Intent.CATEGORY_OPENABLE);
+  // intent.setType("*/*");
+  // startActivityForResult(intent, REQUEST_CODE);
+  
+  // Then get metadata from selected URI:
+  const documentMetadata = await CapacitorMediaStore.getDocumentMetadataFromSAF({
+    uri: 'content://com.android.providers.downloads.documents/document/123'
+  });
+} else {
+  // Use MediaStore for older Android versions
+  const documents = await CapacitorMediaStore.getMediasByType({
+    mediaType: 'document'
+  });
+}
+```
+
+### Audio Files (Fixed for Android 12 and below)
+
+```typescript
+// Now works correctly on all Android versions
+const audioFiles = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  albumName: 'My Album', // optional filter
+  artistName: 'Artist Name', // optional filter
+  limit: 100
+});
+
+console.log(`Found ${audioFiles.totalCount} audio files`);
+audioFiles.media.forEach(audio => {
+  console.log(`${audio.title} by ${audio.artist} - ${audio.duration}ms`);
+});
+```
+
+### Albums
+
+```typescript
+const albums = await CapacitorMediaStore.getAlbums();
+console.log(`Found ${albums.totalCount} albums`);
+```
+
+### Save Media
+
+```typescript
+const result = await CapacitorMediaStore.saveMedia({
+  data: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD...', // base64 data
+  fileName: 'my-image.jpg',
+  mediaType: 'image',
+  albumName: 'My Photos' // optional
+});
+
+if (result.success) {
+  console.log('Saved to:', result.uri);
+}
+```
+
+### Media Metadata
+
+```typescript
+const metadata = await CapacitorMediaStore.getMediaMetadata({
+  filePath: 'content://media/external/audio/media/123'
+});
+
+console.log('Metadata:', metadata.media);
+```
+
+## API Reference
+
+### Methods
+
+| Method | Description | Android Version Support |
+|--------|-------------|------------------------|
+| `getMedias()` | Get all media files | All versions |
+| `getMediasByType()` | Get media by type | All versions |
+| `getAlbums()` | Get audio albums | All versions |
+| `saveMedia()` | Save media file | All versions |
+| `getMediaMetadata()` | Get file metadata | All versions |
+| `checkPermissions()` | Check permissions | All versions |
+| `requestPermissions()` | Request permissions | All versions |
+| `shouldUseSAFForDocuments()` | Check if SAF needed | All versions |
+| `createDocumentPickerIntent()` | SAF intent guidance | Android 13+ |
+| `getDocumentMetadataFromSAF()` | SAF document metadata | Android 13+ |
+
+### Media Types
+
+```typescript
+enum MediaType {
+  IMAGE = 'image',
+  AUDIO = 'audio',
+  VIDEO = 'video',
+  DOCUMENT = 'document',
+  ALL = 'all'
+}
+```
+
+### Permission States
+
+```typescript
+enum PermissionState {
+  GRANTED = 'granted',
+  DENIED = 'denied',
+  PROMPT = 'prompt',
+  PROMPT_WITH_RATIONALE = 'prompt-with-rationale'
+}
+```
+
+## Android Version Compatibility
+
+### Android 6-12 (API 23-32)
+- Uses `READ_EXTERNAL_STORAGE` permission
+- Full access to all media types including documents via MediaStore
+- Audio files: ✅ Fixed - now works correctly
+
+### Android 13+ (API 33+)
+- Uses granular permissions: `READ_MEDIA_IMAGES`, `READ_MEDIA_AUDIO`, `READ_MEDIA_VIDEO`
+- Documents: ⚠️ Requires Storage Access Framework (SAF)
+- Audio files: ✅ Works with specific permission
+
+### Android 14+ (API 34+)
+- Includes `READ_MEDIA_VISUAL_USER_SELECTED` for partial access
+- Documents: ⚠️ Requires Storage Access Framework (SAF)
+- All other media types work with MediaStore
+
+## Implementation Notes
+
+### Document Access on Android 13+
+
+For Android 13+, documents cannot be accessed through MediaStore. You must implement Storage Access Framework in your app:
+
+```kotlin
+// In your Activity
+private fun openDocumentPicker() {
+    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        addCategory(Intent.CATEGORY_OPENABLE)
+        type = "*/*"
+        // Optional: Specify MIME types
+        putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+            "application/pdf",
+            "application/msword",
+            "text/plain"
+        ))
+    }
+    startActivityForResult(intent, REQUEST_DOCUMENT_PICKER)
+}
+
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+    if (requestCode == REQUEST_DOCUMENT_PICKER && resultCode == Activity.RESULT_OK) {
+        data?.data?.also { uri ->
+            // Use uri with getDocumentMetadataFromSAF()
+        }
+    }
+}
+```
+
+### Audio File Fix Details
+
+The audio retrieval issue on Android 12 and below has been fixed by:
+1. Improving MIME type filtering
+2. Adding additional selection criteria for audio files
+3. Reducing minimum duration threshold
+4. Better handling of MediaStore queries
+
+## Error Handling
+
+```typescript
+try {
+  const media = await CapacitorMediaStore.getMediasByType({
+    mediaType: 'audio'
+  });
+  console.log('Audio files:', media.media);
+} catch (error) {
+  if (error.message.includes('Permission denied')) {
+    // Request permissions
+    await CapacitorMediaStore.requestPermissions();
+  } else if (error.message.includes('Storage Access Framework')) {
+    // Handle SAF requirement for documents on Android 13+
+    console.log('Use SAF for document access');
+  }
+}
+```
+
+## Troubleshooting
+
+### Audio Files Not Loading (Android 12 and below)
+- ✅ **FIXED**: This issue has been resolved in the latest version
+- The plugin now correctly filters and retrieves audio files on all Android versions
+
+### Documents Not Loading (Android 13+)
+- This is expected behavior
+- Use `shouldUseSAFForDocuments()` to check if SAF is required
+- Implement Storage Access Framework for document selection
+- Use `getDocumentMetadataFromSAF()` for selected documents
+
+### Permission Issues
+- Always check permissions before accessing media
+- Request appropriate permissions based on Android version
+- Handle permission denial gracefully
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Contributing
+
+Pull requests are welcome! Please ensure all Android version compatibility is maintained.

@@ -2,6 +2,85 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Latest] - 2024-12-19
+
+### 🐛 Fixed
+- **Android 12 and below**: Fixed `getMediasByType()` with `mediaType: 'audio'` not returning audio files
+  - Improved MIME type filtering for audio files
+  - Added additional selection criteria for better audio file detection
+  - Reduced minimum duration threshold from 5000ms to 1000ms to catch more audio files
+  - Fixed MediaStore query logic for Files content URI on older Android versions
+
+### ⚠️ Breaking Changes
+- **Android 13+ Document Access**: `getMediasByType()` with `mediaType: 'document'` now returns an error/guidance message instead of attempting to use MediaStore
+  - Documents on Android 13+ now require Storage Access Framework (SAF)
+  - Added proper guidance and error messages for SAF implementation
+
+### ✨ New Features
+- **New Method**: `shouldUseSAFForDocuments()` - Check if Storage Access Framework should be used for documents
+- **New Method**: `createDocumentPickerIntent()` - Get guidance for implementing SAF document picker
+- **New Method**: `getDocumentMetadataFromSAF()` - Extract metadata from SAF document URIs
+- **Enhanced Error Messages**: Clearer guidance when document access requires SAF on Android 13+
+
+### 📚 Documentation
+- Added comprehensive migration guide (`MIGRATION_GUIDE.md`)
+- Updated README with Android version compatibility matrix
+- Added examples for both Android 12 and Android 13+ document handling
+- Added troubleshooting guide for common issues
+
+### 🔧 Technical Changes
+- Improved MediaStore selection logic for Android 12 and below
+- Added proper Android 13+ detection and SAF routing
+- Enhanced TypeScript definitions with new SAF interfaces
+- Added web platform stubs for new methods
+
+### 📱 Platform Support
+- **Android 6-12 (API 23-32)**: Full MediaStore support including documents ✅
+- **Android 13+ (API 33+)**: MediaStore for images/audio/video, SAF required for documents ⚠️
+- **Web**: Not supported (shows appropriate warnings) ⚠️
+
+### 🧪 Testing
+- Verified audio file retrieval on Android 9 (API 28)
+- Verified document SAF guidance on Android 14 (API 34)
+- Tested permission handling across all supported Android versions
+
+## Migration Summary
+
+### For Existing Users:
+
+1. **Audio Files (No Action Required)**:
+   ```typescript
+   // This now works correctly on Android 12 and below
+   const audioFiles = await CapacitorMediaStore.getMediasByType({
+     mediaType: 'audio'
+   });
+   ```
+
+2. **Documents (Action Required for Android 13+)**:
+   ```typescript
+   // Check if SAF is needed
+   const safStatus = await CapacitorMediaStore.shouldUseSAFForDocuments();
+   
+   if (safStatus.shouldUseSAF) {
+     // Implement Storage Access Framework for Android 13+
+     // See MIGRATION_GUIDE.md for details
+   } else {
+     // Use MediaStore for Android 12 and below (works as before)
+     const documents = await CapacitorMediaStore.getMediasByType({
+       mediaType: 'document'
+     });
+   }
+   ```
+
+### References
+- [Android MediaStore Documentation](https://developer.android.com/training/data-storage/shared/media)
+- [Android 13 Behavior Changes](https://developer.android.com/about/versions/13/behavior-changes-13)
+- [Storage Access Framework Guide](https://developer.android.com/training/data-storage/shared/documents-files)
+
+---
+
+For detailed migration instructions, see [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md).
+
 ## [1.0.0] - 2025-06-23
 
 ### Added

@@ -127,6 +127,34 @@ var CapacitorMediaStoreWeb = /** @class */ (function (_super) {
             });
         });
     };
+    CapacitorMediaStoreWeb.prototype.createDocumentPickerIntent = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.createDocumentPickerIntent() is not supported on web platform');
+                throw this.unimplemented('Not implemented on web. Use HTML file input for document selection.');
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.getDocumentMetadataFromSAF = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.getDocumentMetadataFromSAF() is not supported on web platform');
+                throw this.unimplemented('Not implemented on web.');
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.shouldUseSAFForDocuments = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.shouldUseSAFForDocuments() is not supported on web platform');
+                return [2 /*return*/, {
+                        shouldUseSAF: false,
+                        androidVersion: 0,
+                        message: 'Storage Access Framework is not available on web platform. Use HTML file input for document selection.'
+                    }];
+            });
+        });
+    };
     return CapacitorMediaStoreWeb;
 }(core_1.WebPlugin));
 exports.CapacitorMediaStoreWeb = CapacitorMediaStoreWeb;

@@ -11,7 +11,11 @@ import type {
   MediaMetadataOptions, 
   MediaMetadataResponse, 
   PermissionStatus,
-  RequestPermissionsOptions
+  RequestPermissionsOptions,
+  SAFIntentResponse,
+  SAFUriOptions,
+  DocumentMetadataResponse,
+  SAFAvailabilityResponse
 } from './definitions';
 
 import { PermissionState } from './definitions';
@@ -61,6 +65,25 @@ export class CapacitorMediaStoreWeb extends WebPlugin implements CapacitorMediaS
       readMediaAudio: PermissionState.GRANTED,
       readMediaVideo: PermissionState.GRANTED,
       writeExternalStorage: PermissionState.GRANTED
+    };
+  }
+
+  async createDocumentPickerIntent(): Promise<SAFIntentResponse> {
+    console.warn('CapacitorMediaStore.createDocumentPickerIntent() is not supported on web platform');
+    throw this.unimplemented('Not implemented on web. Use HTML file input for document selection.');
+  }
+
+  async getDocumentMetadataFromSAF(options: SAFUriOptions): Promise<DocumentMetadataResponse> {
+    console.warn('CapacitorMediaStore.getDocumentMetadataFromSAF() is not supported on web platform');
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  async shouldUseSAFForDocuments(): Promise<SAFAvailabilityResponse> {
+    console.warn('CapacitorMediaStore.shouldUseSAFForDocuments() is not supported on web platform');
+    return {
+      shouldUseSAF: false,
+      androidVersion: 0,
+      message: 'Storage Access Framework is not available on web platform. Use HTML file input for document selection.'
     };
   }
 }
