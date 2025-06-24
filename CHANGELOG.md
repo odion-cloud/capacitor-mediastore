@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.9] - 2025-01-27
+
+### Fixed
+- **Android 12 and below**: Fixed audio files not being returned by `getMediasByType({ mediaType: 'audio' })`
+  - Removed restrictive duration filter that was excluding short audio clips and ringtones
+  - All valid audio files are now returned regardless of duration
+- **Android 13 and above**: Fixed document files not being returned by `getMedias()` and `getMediasByType({ mediaType: 'document' })`
+  - Documents are no longer accessible via MediaStore on Android 13+ due to scoped storage changes
+  - Updated implementation to properly handle this Android platform limitation
+  - Added clear documentation about document access differences between Android versions
+
+### Changed
+- **Document handling**: Updated behavior to match Android platform changes
+  - Android 12 and below: Documents accessible via MediaStore (unchanged)
+  - Android 13 and above: Documents require Storage Access Framework, return empty results
+- **Audio queries**: Removed duration-based filtering to improve file discovery
+- **Video queries**: Removed duration-based filtering to improve file discovery
+
+### Added
+- Comprehensive documentation about Android version behavior differences
+- Code examples for handling document access across different Android versions
+- Media type support matrix in README
+- Enhanced inline code comments explaining version-specific behavior
+
+### Documentation
+- Added "Android Version Behavior Differences" section to README
+- Updated method documentation with version-specific notes
+- Added migration examples for handling document access
+
 ## [1.0.0] - 2025-06-23
 
 ### Added

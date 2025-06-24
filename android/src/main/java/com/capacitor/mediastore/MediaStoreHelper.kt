@@ -39,15 +39,26 @@ class MediaStoreHelper(private val context: Context) {
         val mediaArray = JSArray()
         var totalCount = 0
 
-        // Get all media types
-        val imageFiles = queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image", options)
-        val audioFiles = queryMediaStore(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio", options)
-        val videoFiles = queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video", options)
-
         val allFiles = mutableListOf<JSObject>()
-        allFiles.addAll(imageFiles)
-        allFiles.addAll(audioFiles)
-        allFiles.addAll(videoFiles)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ (API 33+) - Use specific content URIs for each media type
+            val imageFiles = queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image", options)
+            val audioFiles = queryMediaStore(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio", options)
+            val videoFiles = queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video", options)
+            // Note: Documents are not accessible via MediaStore on Android 13+
+            // They require Storage Access Framework (SAF) or document provider APIs
+            // For now, we'll exclude documents from getMedias() on Android 13+
+            // This is consistent with Android's scoped storage model
+
+            allFiles.addAll(imageFiles)
+            allFiles.addAll(audioFiles)
+            allFiles.addAll(videoFiles)
+        } else {
+            // Android 12 and below (API 32 and below) - Use Files content URI for broader access
+            val allMediaFiles = queryMediaStore(MediaStore.Files.getContentUri("external"), "all", options)
+            allFiles.addAll(allMediaFiles)
+        }
 
         // Sort combined results
         allFiles.sortWith { a, b ->
@@ -81,14 +92,23 @@ class MediaStoreHelper(private val context: Context) {
         val result = JSObject()
         val mediaArray = JSArray()
 
-        val contentUri = when (mediaType.lowercase()) {
-            "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-            "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            else -> MediaStore.Files.getContentUri("external")
+        val files = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ (API 33+) - Use specific content URIs
+            when (mediaType.lowercase()) {
+                "image" -> queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+                "audio" -> queryMediaStore(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+                "video" -> queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+                "document" -> {
+                    // Documents are not accessible via MediaStore on Android 13+
+                    // Return empty list as documents require Storage Access Framework (SAF)
+                    emptyList()
+                }
+                else -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
+            }
+        } else {
+            // Android 12 and below (API 32 and below) - Use Files content URI for broader access
+            queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
         }
-
-        val files = queryMediaStore(contentUri, mediaType, options)
         
         // Apply pagination
         val startIndex = options.offset
@@ -496,25 +516,56 @@ class MediaStoreHelper(private val context: Context) {
     private fun buildSelection(options: MediaQueryOptions, mediaType: String): String? {
         val conditions = mutableListOf<String>()
 
-        // Add media type specific conditions
+        // Add media type filtering for Files content URI (Android 12 and below)
         when (mediaType.lowercase()) {
+            "image" -> {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE}")
+                }
+                // Basic size filter to exclude thumbnail files
+                conditions.add("${MediaStore.MediaColumns.SIZE} > 1024")
+            }
             "audio" -> {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO}")
+                }
                 if (options.albumName != null) {
                     conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
                 }
                 if (options.artistName != null) {
                     conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
                 }
-                // Filter out very short audio files (likely system sounds)
-                conditions.add("${MediaStore.Audio.Media.DURATION} > 5000")
-            }
-            "image" -> {
-                // Filter out very small images (likely thumbnails)
-                conditions.add("${MediaStore.Images.Media.SIZE} > 1024")
+                // Removed restrictive duration filter - allow all audio files
+                // Some audio files like ringtones or short clips may be valid
             }
             "video" -> {
-                // Filter out very short videos
-                conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO}")
+                }
+                // Removed restrictive duration filter - allow all video files
+            }
+            "document" -> {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    // For Android 12 and below, query document files from Files content URI
+                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE}")
+                    conditions.add("(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')")
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'audio/%'")
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'video/%'")
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'image/%'")
+                } else {
+                    // For Android 13+, documents should not be queried via MediaStore
+                    // This condition will never match anything, effectively returning empty results
+                    conditions.add("1 = 0")
+                }
+            }
+            "all" -> {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    conditions.add("(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE} OR " +
+                                 "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO} OR " +
+                                 "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO} OR " +
+                                 "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE} AND " +
+                                 "(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')))")
+                }
             }
         }
 

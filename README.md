@@ -379,6 +379,69 @@ class MusicService {
 }
 ```
 
+## Android Version Behavior Differences
+
+### Document File Access
+
+Due to Android's evolving storage security model, document file access behavior differs by Android version:
+
+**Android 12 and below (API ≤ 32):**
+- ✅ `getMedias()` returns audio, video, image, **and document files**
+- ✅ `getMediasByType({ mediaType: 'document' })` **works correctly**
+- ✅ Documents accessible via MediaStore Files API
+
+**Android 13 and above (API ≥ 33):**
+- ⚠️ `getMedias()` returns audio, video, and image files **only (documents excluded)**
+- ⚠️ `getMediasByType({ mediaType: 'document' })` **returns empty list**
+- 🚫 Documents require Storage Access Framework (SAF) - not supported via MediaStore
+
+### Audio File Access
+
+**Android 12 and below (API ≤ 32):**
+- ✅ All audio files accessible, including short clips and ringtones
+- ✅ No duration restrictions applied
+
+**Android 13 and above (API ≥ 33):**
+- ✅ All audio files accessible with `READ_MEDIA_AUDIO` permission
+- ✅ Better performance with dedicated audio content URI
+
+### Media Type Support Matrix
+
+| Media Type | Android ≤ 12 | Android ≥ 13 | Notes |
+|------------|--------------|--------------|-------|
+| **Audio** | ✅ Full Support | ✅ Enhanced Support | Better performance on Android 13+ |
+| **Video** | ✅ Full Support | ✅ Enhanced Support | Better performance on Android 13+ |
+| **Image** | ✅ Full Support | ✅ Enhanced Support | Better performance on Android 13+ |
+| **Document** | ✅ MediaStore Access | ❌ Not Supported | Use SAF for Android 13+ |
+
+### Recommended Document Handling
+
+For cross-version document access, consider these alternatives:
+
+```typescript
+// ✅ Recommended: Version-specific handling
+import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
+import { Device } from '@capacitor/device';
+
+async function getDocuments() {
+  const info = await Device.getInfo();
+  const androidVersion = parseInt(info.osVersion);
+  
+  if (androidVersion >= 13) {
+    // Use Storage Access Framework or document picker
+    // Documents not supported via MediaStore on Android 13+
+    console.log('Use document picker for Android 13+');
+    return [];
+  } else {
+    // Use MediaStore for Android 12 and below
+    const result = await CapacitorMediaStore.getMediasByType({
+      mediaType: 'document'
+    });
+    return result.media;
+  }
+}
+```
+
 ## Android Version Support
 
 This plugin supports a wide range of Android versions with adaptive permission handling:
