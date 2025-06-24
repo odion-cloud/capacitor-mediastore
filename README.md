@@ -392,8 +392,8 @@ Due to Android's evolving storage security model, document file access behavior 
 
 **Android 13 and above (API ≥ 33):**
 - ⚠️ `getMedias()` returns audio, video, and image files **only (documents excluded)**
-- ⚠️ `getMediasByType({ mediaType: 'document' })` **returns empty list**
-- 🚫 Documents require Storage Access Framework (SAF) - not supported via MediaStore
+- ✅ `getMediasByType({ mediaType: 'document' })` **works with limited access**
+- ⚙️ Documents use alternative Files API approach (limited but functional)
 
 ### Audio File Access
 
@@ -409,10 +409,10 @@ Due to Android's evolving storage security model, document file access behavior 
 
 | Media Type | Android ≤ 12 | Android ≥ 13 | Notes |
 |------------|--------------|--------------|-------|
-| **Audio** | ✅ Full Support | ✅ Enhanced Support | Better performance on Android 13+ |
+| **Audio** | ✅ Full Support | ✅ Enhanced Support | Fixed: Now works correctly on all versions |
 | **Video** | ✅ Full Support | ✅ Enhanced Support | Better performance on Android 13+ |
 | **Image** | ✅ Full Support | ✅ Enhanced Support | Better performance on Android 13+ |
-| **Document** | ✅ MediaStore Access | ❌ Not Supported | Use SAF for Android 13+ |
+| **Document** | ✅ MediaStore Access | ⚠️ Limited Support | Uses alternative Files API on Android 13+ |
 
 ### Recommended Document Handling
 

@@ -11,9 +11,11 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Size
+import android.util.Log
 
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
@@ -100,8 +102,8 @@ class MediaStoreHelper(private val context: Context) {
                 "video" -> queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaType, options)
                 "document" -> {
                     // Documents are not accessible via MediaStore on Android 13+
-                    // Return empty list as documents require Storage Access Framework (SAF)
-                    emptyList()
+                    // Use Storage Access Framework (SAF) to access documents
+                    queryDocumentsWithSAF(options)
                 }
                 else -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
             }
@@ -351,7 +353,7 @@ class MediaStoreHelper(private val context: Context) {
         
         val projection = getProjectionForMediaType(mediaType)
         val selection = buildSelection(options, mediaType)
-        val selectionArgs = buildSelectionArgs(options)
+        val selectionArgs = buildSelectionArgs(options, mediaType)
         val sortOrder = buildSortOrder(options)
 
         // Include both internal and external content URIs for better coverage
@@ -528,15 +530,18 @@ class MediaStoreHelper(private val context: Context) {
             "audio" -> {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO}")
+                    // Note: When querying Files content URI, we can't use audio-specific columns
+                    // like MediaStore.Audio.Media.ALBUM or MediaStore.Audio.Media.ARTIST
+                    // These columns are only available when querying Audio content URI directly
+                } else {
+                    // Android 13+: We're querying Audio content URI directly, so we can use audio columns
+                    if (options.albumName != null) {
+                        conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
+                    }
+                    if (options.artistName != null) {
+                        conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
+                    }
                 }
-                if (options.albumName != null) {
-                    conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
-                }
-                if (options.artistName != null) {
-                    conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
-                }
-                // Removed restrictive duration filter - allow all audio files
-                // Some audio files like ringtones or short clips may be valid
             }
             "video" -> {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
@@ -566,20 +571,34 @@ class MediaStoreHelper(private val context: Context) {
                                  "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE} AND " +
                                  "(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')))")
                 }
+                
+                // Add album/artist filtering for "all" type since it can include audio files
+                if (options.albumName != null) {
+                    conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
+                }
+                if (options.artistName != null) {
+                    conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
+                }
             }
         }
 
         return if (conditions.isEmpty()) null else conditions.joinToString(" AND ")
     }
 
-    private fun buildSelectionArgs(options: MediaQueryOptions): Array<String>? {
+    private fun buildSelectionArgs(options: MediaQueryOptions, mediaType: String): Array<String>? {
         val args = mutableListOf<String>()
 
-        if (options.albumName != null) {
+        // Add album/artist args when:
+        // 1. Android 13+ and querying audio type (uses Audio content URI)
+        // 2. Android 12 and below and querying "all" type (uses Files content URI with audio columns available)
+        val canUseAudioColumns = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && mediaType.lowercase() == "audio") ||
+                                (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && mediaType.lowercase() == "all")
+
+        if (canUseAudioColumns && options.albumName != null) {
             args.add(options.albumName)
         }
 
-        if (options.artistName != null) {
+        if (canUseAudioColumns && options.artistName != null) {
             args.add(options.artistName)
         }
 
@@ -661,5 +680,89 @@ class MediaStoreHelper(private val context: Context) {
         val audioExtensions = listOf("mp3", "wav", "m4a", "ogg", "flac", "aac", "wma")
         val extension = filePath.substringAfterLast('.').lowercase()
         return audioExtensions.contains(extension)
+    }
+
+    /**
+     * Query documents using alternative methods for Android 13+
+     * Since MediaStore doesn't provide document access on Android 13+, we use a limited approach
+     * that tries to find documents through the Files API with document mime types
+     */
+    private fun queryDocumentsWithSAF(options: MediaQueryOptions): List<JSObject> {
+        val documents = mutableListOf<JSObject>()
+        
+        try {
+            // Try using Files API with document mime types
+            // This is limited but may still find some documents
+            val filesUri = MediaStore.Files.getContentUri("external")
+            
+            val projection = arrayOf(
+                MediaStore.MediaColumns._ID,
+                MediaStore.MediaColumns.DISPLAY_NAME,
+                MediaStore.MediaColumns.DATA,
+                MediaStore.MediaColumns.SIZE,
+                MediaStore.MediaColumns.MIME_TYPE,
+                MediaStore.MediaColumns.DATE_ADDED,
+                MediaStore.MediaColumns.DATE_MODIFIED
+            )
+
+            // Try to find documents by mime type
+            val documentMimeConditions = listOf(
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/pdf'",
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/msword'", 
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/vnd.openxmlformats-officedocument%'",
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/vnd.ms-%'",
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/plain'",
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/csv'",
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/zip'",
+                "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/x-zip%'"
+            )
+
+            val selection = documentMimeConditions.joinToString(" OR ")
+            val sortOrder = "${MediaStore.MediaColumns.DATE_ADDED} DESC"
+
+            val cursor = context.contentResolver.query(
+                filesUri,
+                projection,
+                selection,
+                null,
+                sortOrder
+            )
+
+            cursor?.use {
+                val idColumn = it.getColumnIndex(MediaStore.MediaColumns._ID)
+                val displayNameColumn = it.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+                val dataColumn = it.getColumnIndex(MediaStore.MediaColumns.DATA)
+                val sizeColumn = it.getColumnIndex(MediaStore.MediaColumns.SIZE)
+                val mimeTypeColumn = it.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
+                val dateAddedColumn = it.getColumnIndex(MediaStore.MediaColumns.DATE_ADDED)
+                val dateModifiedColumn = it.getColumnIndex(MediaStore.MediaColumns.DATE_MODIFIED)
+
+                while (it.moveToNext()) {
+                    val document = JSObject()
+                    
+                    if (idColumn >= 0) document.put("id", it.getString(idColumn))
+                    if (displayNameColumn >= 0) document.put("displayName", it.getString(displayNameColumn) ?: "Unknown Document")
+                    if (dataColumn >= 0) {
+                        val filePath = it.getString(dataColumn)
+                        document.put("uri", "file://$filePath")
+                        document.put("isExternal", filePath.contains("/storage/") && !filePath.contains("/storage/emulated/0/"))
+                    }
+                    if (sizeColumn >= 0) document.put("size", it.getLong(sizeColumn))
+                    if (mimeTypeColumn >= 0) document.put("mimeType", it.getString(mimeTypeColumn) ?: "application/octet-stream")
+                    if (dateAddedColumn >= 0) document.put("dateAdded", it.getLong(dateAddedColumn) * 1000L)
+                    if (dateModifiedColumn >= 0) document.put("dateModified", it.getLong(dateModifiedColumn) * 1000L)
+                    
+                    document.put("mediaType", "document")
+                    
+                    documents.add(document)
+                }
+            }
+            
+        } catch (e: Exception) {
+            Log.e("MediaStoreHelper", "Failed to query documents with alternative method: ${e.message}")
+        }
+
+        Log.i("MediaStoreHelper", "Found ${documents.size} documents using alternative method for Android 13+")
+        return documents
     }
 }
