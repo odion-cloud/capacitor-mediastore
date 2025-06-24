@@ -58,10 +58,6 @@ class MediaStorePlugin : Plugin() {
 
         try {
             val options = parseMediaQueryOptions(call)
-            
-            // Note: getMedias() behavior differs by Android version:
-            // - Android 12 and below: Returns audio, video, image, and document files
-            // - Android 13+: Returns audio, video, and image files only (documents excluded per Android scoped storage model)
             val result = mediaStoreHelper.getMedias(options)
             call.resolve(result)
         } catch (e: Exception) {
@@ -79,10 +75,6 @@ class MediaStorePlugin : Plugin() {
         try {
             val mediaType = call.getString("mediaType") ?: "all"
             val options = parseMediaQueryOptions(call)
-            
-            // Note: Document access behavior differs by Android version:
-            // - Android 12 and below: Documents accessible via MediaStore Files API
-            // - Android 13+: Documents require Storage Access Framework (SAF) - not supported via MediaStore
             val result = mediaStoreHelper.getMediasByType(mediaType, options)
             call.resolve(result)
         } catch (e: Exception) {

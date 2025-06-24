@@ -2,44 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.10] - 2025-01-27
-
-### Fixed
-- **Android 12 and below**: Fixed audio files not being returned by `getMediasByType({ mediaType: 'audio' })`
-  - Root cause: Audio-specific columns (ALBUM, ARTIST) were being used with Files content URI where they're not available
-  - Solution: Removed audio-specific column filtering when querying Files content URI for Android ≤ 12
-  - Result: Audio files now correctly returned by `getMediasByType()` on Android 12 and below
-- **Android 13 and above**: Implemented limited document access via alternative Files API approach
-  - Root cause: MediaStore doesn't provide document access on Android 13+ due to scoped storage
-  - Solution: Added `queryDocumentsWithSAF()` method using Files API with document mime type filtering
-  - Result: `getMediasByType({ mediaType: 'document' })` now returns documents on Android 13+ (limited but functional)
-
-### Changed
-- **Audio column filtering**: Updated to only use audio-specific columns when appropriate
-  - Android 13+: Uses audio columns when querying Audio content URI directly
-  - Android 12-: Avoids audio columns when querying Files content URI for specific audio type
-  - "All" media type: Can use audio columns for filtering on all Android versions
-- **Document access strategy**: 
-  - Android 12 and below: Uses MediaStore Files API (unchanged, full access)
-  - Android 13 and above: Uses alternative Files API with mime type filtering (limited access)
-
-### Added
-- New `queryDocumentsWithSAF()` method for Android 13+ document access
-- Enhanced column compatibility checking in `buildSelectionArgs()`
-- Comprehensive logging for document query operations
-- Improved error handling for document access across Android versions
-
-### Technical Details
-- Fixed `buildSelection()` method to handle audio columns correctly per Android version
-- Updated `buildSelectionArgs()` method signature to include mediaType parameter
-- Added proper mime type filtering for document discovery on Android 13+
-- Enhanced debugging logs to track document query success/failure
-
-### Documentation
-- Updated README with corrected Android version behavior
-- Fixed media type support matrix to reflect current working state
-- Updated inline code comments with technical explanations
-
 ## [1.0.0] - 2025-06-23
 
 ### Added
