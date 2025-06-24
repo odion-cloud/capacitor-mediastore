@@ -32,7 +32,7 @@ export interface CapacitorMediaStorePlugin {
   /**
    * Request permissions for media access
    */
-  requestPermissions(): Promise<PermissionStatus>;
+  requestPermissions(options?: RequestPermissionsOptions): Promise<PermissionStatus>;
 }
 
 export interface MediaQueryOptions {
@@ -111,6 +111,14 @@ export interface SaveMediaOptions {
    * Relative path within the media type directory
    */
   relativePath?: string;
+}
+
+export interface RequestPermissionsOptions {
+  /**
+   * Specific permission types to request. If not provided, all permissions will be requested.
+   * Available types: 'images', 'audio', 'video'
+   */
+  types?: string[];
 }
 
 export interface MediaFile {

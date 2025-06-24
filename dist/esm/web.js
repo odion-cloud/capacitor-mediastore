@@ -113,7 +113,7 @@ var CapacitorMediaStoreWeb = /** @class */ (function (_super) {
             });
         });
     };
-    CapacitorMediaStoreWeb.prototype.requestPermissions = function () {
+    CapacitorMediaStoreWeb.prototype.requestPermissions = function (options) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 console.warn('CapacitorMediaStore.requestPermissions() is not supported on web platform');

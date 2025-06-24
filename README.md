@@ -22,32 +22,135 @@ npx cap sync
 
 ## Android Setup
 
+### 1. Add Permissions to AndroidManifest.xml
+
 Add the following permissions to your `android/app/src/main/AndroidManifest.xml`:
 
 ```xml
-<!-- Required for accessing media files -->
+<!-- Legacy permissions for Android 6-12 -->
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
                  android:maxSdkVersion="32" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
                  android:maxSdkVersion="29" />
 
-<!-- Granular media permissions for Android 13+ -->
+<!-- Granular media permissions for Android 13+ (API 33+) -->
 <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
-<!-- Visual media permissions for Android 14+ -->
+<!-- Visual media permissions for Android 14+ (API 34+) -->
 <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 ```
 
+### 2. Permission Behavior by Android Version
+
+- **Android 6-12 (API 23-32)**: Uses `READ_EXTERNAL_STORAGE` for all media access
+- **Android 13+ (API 33+)**: Uses granular permissions (`READ_MEDIA_IMAGES`, `READ_MEDIA_AUDIO`, `READ_MEDIA_VIDEO`)
+- **Android 14+ (API 34+)**: Adds `READ_MEDIA_VISUAL_USER_SELECTED` for selective media access
+
+## iOS Setup
+
+### 1. Add Usage Description to Info.plist
+
+Add the following to your `ios/App/App/Info.plist`:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to your photo library to manage media files</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>This app needs access to save media files to your photo library</string>
+```
+
+### 2. iOS Permission Behavior
+
+- iOS uses the Photos framework for media access
+- Permission is requested automatically when calling media methods
+- Limited access (iOS 14+) is supported and treated as granted
+
 ## Usage
+
+### Basic Setup
 
 ```typescript
 import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 
-// Request permissions first
-const permissions = await CapacitorMediaStore.requestPermissions();
-console.log('Permissions:', permissions);
+// Check current permission status
+const permissions = await CapacitorMediaStore.checkPermissions();
+console.log('Current permissions:', permissions);
+
+// Request all permissions
+const requestResult = await CapacitorMediaStore.requestPermissions();
+console.log('Permission request result:', requestResult);
+
+// Request specific permission types
+const specificPermissions = await CapacitorMediaStore.requestPermissions({
+  types: ['audio', 'images'] // Only request audio and image permissions
+});
+console.log('Specific permissions:', specificPermissions);
+```
+
+### Permission Types
+
+Available permission types for `requestPermissions()`:
+- `'images'` - Access to image files
+- `'audio'` - Access to audio files  
+- `'video'` - Access to video files
+
+If no types are specified, all available permissions will be requested.
+
+### Android Permission Examples
+
+```typescript
+// For music/audio apps - request only audio permission
+await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
+
+// For photo/gallery apps - request images and videos
+await CapacitorMediaStore.requestPermissions({ types: ['images', 'video'] });
+
+// For full media access - request all permissions
+await CapacitorMediaStore.requestPermissions();
+```
+
+### Permission Status Values
+
+The plugin returns these permission states:
+- `'granted'` - Permission is granted and you can access media
+- `'denied'` - Permission was denied by the user
+- `'prompt'` - Permission needs to be requested (first time)
+- `'prompt-with-rationale'` - User denied before, show rationale
+
+### Platform Differences
+
+**Android Behavior:**
+- Shows native Android permission dialog
+- Handles different permission types based on Android version
+- Android 13+ shows separate dialogs for images, audio, video
+- Android 6-12 shows single storage permission dialog
+
+**iOS Behavior:**
+- Shows native iOS photo library permission dialog
+- Single permission covers all media types
+- Limited access (iOS 14+) is treated as granted
+
+### Troubleshooting Permissions
+
+If permission dialogs don't appear:
+
+1. **Check AndroidManifest.xml** - Ensure all required permissions are declared
+2. **Verify iOS Info.plist** - Ensure usage descriptions are present  
+3. **Test on real device** - Permission dialogs don't show in some simulators
+4. **Check app settings** - User may have denied permissions permanently
+
+```typescript
+// Debug permission issues
+const currentPermissions = await CapacitorMediaStore.checkPermissions();
+console.log('Current permission state:', currentPermissions);
+
+// If permissions are denied, you may need to guide users to app settings
+if (currentPermissions.readMediaAudio === 'denied') {
+  // Show instructions to manually enable in device settings
+}
+```
 
 // Get all media files (including from SD card)
 const allMedia = await CapacitorMediaStore.getMedias({

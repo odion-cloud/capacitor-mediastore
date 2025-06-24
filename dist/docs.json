@@ -107,13 +107,20 @@
       },
       {
         "name": "requestPermissions",
-        "signature": "() => Promise<PermissionStatus>",
-        "parameters": [],
+        "signature": "(options?: RequestPermissionsOptions | undefined) => Promise<PermissionStatus>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "RequestPermissionsOptions | undefined"
+          }
+        ],
         "returns": "Promise<PermissionStatus>",
         "tags": [],
         "docs": "Request permissions for media access",
         "complexTypes": [
-          "PermissionStatus"
+          "PermissionStatus",
+          "RequestPermissionsOptions"
         ],
         "slug": "requestpermissions"
       }
@@ -654,6 +661,22 @@
             "PermissionState"
           ],
           "type": "PermissionState"
+        }
+      ]
+    },
+    {
+      "name": "RequestPermissionsOptions",
+      "slug": "requestpermissionsoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "types",
+          "tags": [],
+          "docs": "Specific permission types to request. If not provided, all permissions will be requested.\nAvailable types: 'images', 'audio', 'video'",
+          "complexTypes": [],
+          "type": "string[] | undefined"
         }
       ]
     }

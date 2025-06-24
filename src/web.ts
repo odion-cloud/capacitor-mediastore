@@ -10,7 +10,8 @@ import type {
   SaveMediaResponse, 
   MediaMetadataOptions, 
   MediaMetadataResponse, 
-  PermissionStatus
+  PermissionStatus,
+  RequestPermissionsOptions
 } from './definitions';
 
 import { PermissionState } from './definitions';
@@ -52,7 +53,7 @@ export class CapacitorMediaStoreWeb extends WebPlugin implements CapacitorMediaS
     };
   }
 
-  async requestPermissions(): Promise<PermissionStatus> {
+  async requestPermissions(options?: RequestPermissionsOptions): Promise<PermissionStatus> {
     console.warn('CapacitorMediaStore.requestPermissions() is not supported on web platform');
     return {
       readExternalStorage: PermissionState.GRANTED,

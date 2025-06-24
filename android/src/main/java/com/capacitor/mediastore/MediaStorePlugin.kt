@@ -171,41 +171,79 @@ class MediaStorePlugin : Plugin() {
 
     @PluginMethod
     override fun requestPermissions(call: PluginCall) {
+        // Get requested permission types from options
+        val requestedTypes = call.getArray("types")
         val permissions = mutableListOf<String>()
         
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                // Android 14+ (API 34+) - Visual media permissions
-                permissions.addAll(listOf(
-                    Manifest.permission.READ_MEDIA_IMAGES,
-                    Manifest.permission.READ_MEDIA_AUDIO,
-                    Manifest.permission.READ_MEDIA_VIDEO,
-                    "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
-                ))
-            }
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                // Android 13+ (API 33+) - Granular media permissions
-                permissions.addAll(listOf(
-                    Manifest.permission.READ_MEDIA_IMAGES,
-                    Manifest.permission.READ_MEDIA_AUDIO,
-                    Manifest.permission.READ_MEDIA_VIDEO
-                ))
-            }
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
-                // Android 6+ (API 23+) - Runtime permissions
-                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (requestedTypes != null && requestedTypes.length() > 0) {
+            // Request specific permission types
+            for (i in 0 until requestedTypes.length()) {
+                when (requestedTypes.getString(i)?.lowercase()) {
+                    "images" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
+                        } else {
+                            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        }
+                    }
+                    "audio" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            permissions.add(Manifest.permission.READ_MEDIA_AUDIO)
+                        } else {
+                            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        }
+                    }
+                    "video" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
+                        } else {
+                            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        }
+                    }
                 }
             }
-            else -> {
-                // Android 5.1 and below (API 22 and below) - No runtime permissions needed
-                checkPermissions(call)
-                return
+        } else {
+            // Request all permissions
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                    // Android 14+ (API 34+) - Visual media permissions
+                    permissions.addAll(listOf(
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_AUDIO,
+                        Manifest.permission.READ_MEDIA_VIDEO,
+                        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+                    ))
+                }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                    // Android 13+ (API 33+) - Granular media permissions
+                    permissions.addAll(listOf(
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_AUDIO,
+                        Manifest.permission.READ_MEDIA_VIDEO
+                    ))
+                }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                    // Android 6+ (API 23+) - Runtime permissions
+                    permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }
+                }
+                else -> {
+                    // Android 5.1 and below (API 22 and below) - No runtime permissions needed
+                    checkPermissions(call)
+                    return
+                }
             }
         }
 
-        requestPermissionForAliases(permissions.toTypedArray(), call, "permissionCallback")
+        // Remove duplicates and request permissions
+        val uniquePermissions = permissions.distinct().toTypedArray()
+        if (uniquePermissions.isNotEmpty()) {
+            requestPermissionForAliases(uniquePermissions, call, "permissionCallback")
+        } else {
+            checkPermissions(call)
+        }
     }
 
     @PermissionCallback
