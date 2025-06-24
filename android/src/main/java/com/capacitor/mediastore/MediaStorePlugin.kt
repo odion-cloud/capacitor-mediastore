@@ -134,58 +134,6 @@ class MediaStorePlugin : Plugin() {
         }
     }
 
-    // New method to create document picker intent for Android 13+
-    @PluginMethod
-    fun createDocumentPickerIntent(call: PluginCall) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            call.reject("Document picker via SAF is recommended for Android 13+. Use getMediasByType for older versions.")
-            return
-        }
-
-        try {
-            val intent = mediaStoreHelper.createDocumentPickerIntent()
-            val result = JSObject()
-            result.put("success", true)
-            result.put("message", "Use the returned intent with startActivityForResult to pick documents")
-            result.put("intentAction", intent.action)
-            result.put("intentType", intent.type)
-            
-            // Since we can't directly return Intent objects, provide guidance
-            result.put("guidance", "Use ACTION_OPEN_DOCUMENT intent in your app's activity to pick documents")
-            call.resolve(result)
-        } catch (e: Exception) {
-            call.reject("Failed to create document picker intent: ${e.message}", e)
-        }
-    }
-
-    // New method to get document metadata from SAF URI
-    @PluginMethod
-    fun getDocumentMetadataFromSAF(call: PluginCall) {
-        try {
-            val uriString = call.getString("uri") ?: throw IllegalArgumentException("URI is required")
-            val uri = android.net.Uri.parse(uriString)
-            val result = mediaStoreHelper.getDocumentMetadataFromSAF(uri)
-            call.resolve(result)
-        } catch (e: Exception) {
-            call.reject("Failed to get document metadata: ${e.message}", e)
-        }
-    }
-
-    // New method to check if the device should use SAF for documents
-    @PluginMethod
-    fun shouldUseSAFForDocuments(call: PluginCall) {
-        val result = JSObject()
-        val shouldUseSAF = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-        result.put("shouldUseSAF", shouldUseSAF)
-        result.put("androidVersion", Build.VERSION.SDK_INT)
-        result.put("message", if (shouldUseSAF) {
-            "Android 13+ detected. Use Storage Access Framework (SAF) for document access."
-        } else {
-            "Android 12 or below. MediaStore can be used for document access."
-        })
-        call.resolve(result)
-    }
-
     @PluginMethod
     override fun checkPermissions(call: PluginCall) {
         val result = JSObject()

@@ -27,20 +27,6 @@ export interface CapacitorMediaStorePlugin {
      * Request permissions for media access
      */
     requestPermissions(options?: RequestPermissionsOptions): Promise<PermissionStatus>;
-    /**
-     * Create document picker intent for Android 13+ using Storage Access Framework (SAF)
-     * This method provides guidance for using SAF to access documents on Android 13+
-     */
-    createDocumentPickerIntent(): Promise<SAFIntentResponse>;
-    /**
-     * Get document metadata from Storage Access Framework URI (Android 13+)
-     */
-    getDocumentMetadataFromSAF(options: SAFUriOptions): Promise<DocumentMetadataResponse>;
-    /**
-     * Check if the device should use Storage Access Framework for documents
-     * Returns true for Android 13+ devices
-     */
-    shouldUseSAFForDocuments(): Promise<SAFAvailabilityResponse>;
 }
 export interface MediaQueryOptions {
     /**
@@ -319,76 +305,4 @@ export declare enum PermissionState {
     DENIED = "denied",
     PROMPT = "prompt",
     PROMPT_WITH_RATIONALE = "prompt-with-rationale"
-}
-export interface SAFUriOptions {
-    /**
-     * URI string from Storage Access Framework document picker
-     */
-    uri: string;
-}
-export interface SAFIntentResponse {
-    /**
-     * Success status
-     */
-    success: boolean;
-    /**
-     * Guidance message for implementing SAF
-     */
-    message: string;
-    /**
-     * Intent action (ACTION_OPEN_DOCUMENT)
-     */
-    intentAction?: string;
-    /**
-     * Intent type
-     */
-    intentType?: string;
-    /**
-     * Implementation guidance
-     */
-    guidance: string;
-    /**
-     * Error message if failed
-     */
-    error?: string;
-}
-export interface DocumentMetadataResponse {
-    /**
-     * Document display name
-     */
-    displayName?: string;
-    /**
-     * File size in bytes
-     */
-    size?: number;
-    /**
-     * Document URI
-     */
-    uri: string;
-    /**
-     * Media type (always "document")
-     */
-    mediaType: string;
-    /**
-     * MIME type
-     */
-    mimeType?: string;
-    /**
-     * Error message if failed
-     */
-    error?: string;
-}
-export interface SAFAvailabilityResponse {
-    /**
-     * Whether Storage Access Framework should be used for documents
-     */
-    shouldUseSAF: boolean;
-    /**
-     * Android version (API level)
-     */
-    androidVersion: number;
-    /**
-     * Descriptive message
-     */
-    message: string;
 }

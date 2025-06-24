@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -12,9 +11,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.provider.DocumentsContract
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.Base64
 import android.util.Size
 
@@ -49,12 +46,12 @@ class MediaStoreHelper(private val context: Context) {
             val imageFiles = queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image", options)
             val audioFiles = queryMediaStore(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio", options)
             val videoFiles = queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video", options)
-            
-            // For Android 13+, documents are handled via SAF (Storage Access Framework)
-            // We can't automatically query all documents, but we can show a note in the result
+            val documentFiles = queryMediaStore(MediaStore.Files.getContentUri("external"), "document", options)
+
             allFiles.addAll(imageFiles)
             allFiles.addAll(audioFiles)
             allFiles.addAll(videoFiles)
+            allFiles.addAll(documentFiles)
         } else {
             // Android 12 and below (API 32 and below) - Use Files content URI for broader access
             val allMediaFiles = queryMediaStore(MediaStore.Files.getContentUri("external"), "all", options)
@@ -86,11 +83,6 @@ class MediaStoreHelper(private val context: Context) {
         result.put("totalCount", totalCount)
         result.put("hasMore", endIndex < allFiles.size)
 
-        // Add note for Android 13+ about documents requiring SAF
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            result.put("documentsNote", "Documents on Android 13+ require Storage Access Framework (SAF). Use getDocumentsViaSAF() or prompt user to select documents.")
-        }
-
         return result
     }
 
@@ -98,29 +90,12 @@ class MediaStoreHelper(private val context: Context) {
         val result = JSObject()
         val mediaArray = JSArray()
 
-        val files = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Android 13+ (API 33+) - Use specific content URIs
-            when (mediaType.lowercase()) {
-                "document" -> {
-                    // For Android 13+, documents should use SAF
-                    // Return empty result with guidance message
-                    result.put("error", "Documents on Android 13+ require Storage Access Framework (SAF). Use ACTION_OPEN_DOCUMENT or ACTION_OPEN_DOCUMENT_TREE intent.")
-                    result.put("suggestion", "Consider using getDocumentsViaSAF() method or prompting user to select documents via SAF.")
-                    emptyList<JSObject>()
-                }
-                else -> {
-                    val contentUri = when (mediaType.lowercase()) {
-                        "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                        "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                        "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                        else -> MediaStore.Files.getContentUri("external")
-                    }
-                    queryMediaStore(contentUri, mediaType, options)
-                }
-            }
-        } else {
-            // Android 12 and below (API 32 and below) - Use Files content URI for broader access
-            queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
+        val files = when (mediaType.lowercase()) {
+            "image" -> queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+            "audio" -> queryMediaStore(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+            "video" -> queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+            "document" -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
+            else -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
         }
         
         // Apply pagination
@@ -140,81 +115,6 @@ class MediaStoreHelper(private val context: Context) {
         result.put("hasMore", endIndex < files.size)
 
         return result
-    }
-
-    // New method to handle documents via SAF for Android 13+
-    fun createDocumentPickerIntent(): Intent {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "*/*"
-            // Allow multiple file types
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "text/plain",
-                "text/csv"
-            ))
-        }
-        return intent
-    }
-
-    // New method to handle multiple documents via SAF for Android 13+
-    fun createMultipleDocumentPickerIntent(): Intent {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "*/*"
-            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-            // Allow multiple file types
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "text/plain",
-                "text/csv"
-            ))
-        }
-        return intent
-    }
-
-    // New method to get document metadata from SAF URI
-    fun getDocumentMetadataFromSAF(uri: Uri): JSObject {
-        val mediaObject = JSObject()
-        
-        try {
-            val cursor = context.contentResolver.query(uri, null, null, null, null)
-            cursor?.use {
-                if (it.moveToFirst()) {
-                    val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
-                    
-                    if (displayNameIndex != -1) {
-                        mediaObject.put("displayName", it.getString(displayNameIndex))
-                    }
-                    
-                    if (sizeIndex != -1 && !it.isNull(sizeIndex)) {
-                        mediaObject.put("size", it.getLong(sizeIndex))
-                    }
-                    
-                    mediaObject.put("uri", uri.toString())
-                    mediaObject.put("mediaType", "document")
-                    
-                    // Try to get MIME type
-                    val mimeType = context.contentResolver.getType(uri)
-                    if (mimeType != null) {
-                        mediaObject.put("mimeType", mimeType)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            mediaObject.put("error", "Failed to get document metadata: ${e.message}")
-        }
-        
-        return mediaObject
     }
 
     fun getAlbums(): JSObject {
@@ -438,8 +338,8 @@ class MediaStoreHelper(private val context: Context) {
         val files = mutableListOf<JSObject>()
         
         val projection = getProjectionForMediaType(mediaType)
-        val selection = buildSelection(options, mediaType)
-        val selectionArgs = buildSelectionArgs(options)
+        val selection = buildSelection(options, mediaType, contentUri)
+        val selectionArgs = buildSelectionArgs(options, mediaType, contentUri)
         val sortOrder = buildSortOrder(options)
 
         // Include both internal and external content URIs for better coverage
@@ -601,55 +501,59 @@ class MediaStoreHelper(private val context: Context) {
         }
     }
 
-    private fun buildSelection(options: MediaQueryOptions, mediaType: String): String? {
+    private fun buildSelection(options: MediaQueryOptions, mediaType: String, contentUri: Uri): String? {
         val conditions = mutableListOf<String>()
+        val isFilesContentUri = contentUri.toString().contains("files")
+        val isAudioContentUri = contentUri.toString().contains("audio")
+        val isVideoContentUri = contentUri.toString().contains("video")
 
-        // Add media type filtering for Files content URI (Android 12 and below)
+        // Add media type filtering
         when (mediaType.lowercase()) {
             "image" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE}")
+                if (isFilesContentUri) {
+                    // Use MIME type filtering when querying Files content URI
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} LIKE 'image/%'")
                 }
                 conditions.add("${MediaStore.MediaColumns.SIZE} > 1024")
             }
             "audio" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                    // FIXED: Improve audio selection for Android 12 and below
-                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO}")
-                    // Add additional conditions to ensure we catch all audio files
-                    conditions.add("(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'audio/%' OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO})")
-                } else {
-                    // For Android 13+, we don't need these conditions as we use specific content URIs
+                if (isFilesContentUri) {
+                    // Use MIME type filtering when querying Files content URI
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} LIKE 'audio/%'")
+                } else if (isAudioContentUri) {
+                    // Use audio-specific filters when querying Audio content URI
+                    if (options.albumName != null) {
+                        conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
+                    }
+                    if (options.artistName != null) {
+                        conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
+                    }
+                    conditions.add("${MediaStore.Audio.Media.DURATION} > 5000")
                 }
-                if (options.albumName != null) {
-                    conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
-                }
-                if (options.artistName != null) {
-                    conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
-                }
-                // Reduced minimum duration to catch more audio files
-                conditions.add("${MediaStore.Audio.Media.DURATION} > 1000")
             }
             "video" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO}")
+                if (isFilesContentUri) {
+                    // Use MIME type filtering when querying Files content URI
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} LIKE 'video/%'")
+                } else if (isVideoContentUri) {
+                    // Use video-specific filters when querying Video content URI
+                    conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
                 }
-                conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
             }
             "document" -> {
-                conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE}")
                 conditions.add("(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')")
                 conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'audio/%'")
                 conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'video/%'")
                 conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'image/%'")
             }
             "all" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                    conditions.add("(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE} OR " +
-                                 "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO} OR " +
-                                 "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO} OR " +
-                                 "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE} AND " +
-                                 "(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')))")
+                if (isFilesContentUri) {
+                    // Include all media types using MIME type filtering
+                    conditions.add("(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'image/%' OR " +
+                                 "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'audio/%' OR " +
+                                 "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'video/%' OR " +
+                                 "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR " +
+                                 "${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')")
                 }
             }
         }
@@ -657,15 +561,19 @@ class MediaStoreHelper(private val context: Context) {
         return if (conditions.isEmpty()) null else conditions.joinToString(" AND ")
     }
 
-    private fun buildSelectionArgs(options: MediaQueryOptions): Array<String>? {
+    private fun buildSelectionArgs(options: MediaQueryOptions, mediaType: String, contentUri: Uri): Array<String>? {
         val args = mutableListOf<String>()
+        val isAudioContentUri = contentUri.toString().contains("audio")
 
-        if (options.albumName != null) {
-            args.add(options.albumName)
-        }
+        // Add album/artist arguments when querying audio and using Audio content URI
+        if (mediaType.lowercase() == "audio" && isAudioContentUri) {
+            if (options.albumName != null) {
+                args.add(options.albumName)
+            }
 
-        if (options.artistName != null) {
-            args.add(options.artistName)
+            if (options.artistName != null) {
+                args.add(options.artistName)
+            }
         }
 
         return if (args.isEmpty()) null else args.toTypedArray()
