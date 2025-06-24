@@ -1,6 +1,6 @@
 {
   "name": "@odion-cloud/capacitor-mediastore",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "A Capacitor plugin that provides comprehensive access to Android MediaStore API for media file access and metadata retrieval. This plugin is specifically designed to overcome the limitations of Capacitor's filesystem API, particularly for accessing SD card storage and retrieving rich media metadata.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
