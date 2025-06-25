@@ -53,9 +53,11 @@ class MediaStoreHelper(private val context: Context) {
             allFiles.addAll(videoFiles)
             allFiles.addAll(documentFiles)
         } else {
-            // Android 12 and below (API 32 and below) - Use Files content URI for broader access
-            val allMediaFiles = queryMediaStore(MediaStore.Files.getContentUri("external"), "all", options)
-            allFiles.addAll(allMediaFiles)
+            // Android 12 and below (API 32 and below) - Use optimized strategy per media type
+            allFiles.addAll(queryAudioFilesLegacy(options))
+            allFiles.addAll(queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image", options))
+            allFiles.addAll(queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video", options))
+            allFiles.addAll(queryMediaStore(MediaStore.Files.getContentUri("external"), "document", options))
         }
 
         // Sort combined results
@@ -101,8 +103,22 @@ class MediaStoreHelper(private val context: Context) {
             }
             queryMediaStore(contentUri, mediaType, options)
         } else {
-            // Android 12 and below (API 32 and below) - Use Files content URI for broader access
-            queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
+            // Android 12 and below (API 32 and below) - Use optimized strategy per media type
+            when (mediaType.lowercase()) {
+                "audio" -> queryAudioFilesLegacy(options)
+                "image" -> queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+                "video" -> queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaType, options)
+                "document" -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
+                "all" -> {
+                    val allFiles = mutableListOf<JSObject>()
+                    allFiles.addAll(queryAudioFilesLegacy(options))
+                    allFiles.addAll(queryMediaStore(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image", options))
+                    allFiles.addAll(queryMediaStore(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video", options))
+                    allFiles.addAll(queryMediaStore(MediaStore.Files.getContentUri("external"), "document", options))
+                    allFiles
+                }
+                else -> queryMediaStore(MediaStore.Files.getContentUri("external"), mediaType, options)
+            }
         }
         
         // Apply pagination
@@ -345,7 +361,7 @@ class MediaStoreHelper(private val context: Context) {
         val files = mutableListOf<JSObject>()
         
         val projection = getProjectionForMediaType(mediaType)
-        val selection = buildSelection(options, mediaType)
+        val selection = buildSelection(options, mediaType, contentUri)
         val selectionArgs = buildSelectionArgs(options)
         val sortOrder = buildSortOrder(options)
 
@@ -391,6 +407,7 @@ class MediaStoreHelper(private val context: Context) {
                 }
             } catch (e: Exception) {
                 // Continue with other URIs if one fails
+                android.util.Log.w("MediaStoreHelper", "Error querying $uri: ${e.message}")
             }
         }
 
@@ -508,49 +525,61 @@ class MediaStoreHelper(private val context: Context) {
         }
     }
 
-    private fun buildSelection(options: MediaQueryOptions, mediaType: String): String? {
+    private fun buildSelection(options: MediaQueryOptions, mediaType: String, contentUri: Uri): String? {
         val conditions = mutableListOf<String>()
+        
+        // Determine if we're querying Files content URI or specific media type URI
+        val isFilesUri = contentUri.toString().contains("files")
 
-        // Add media type filtering for Files content URI (Android 12 and below)
-        when (mediaType.lowercase()) {
-            "image" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        // Add media type filtering ONLY for Files content URI
+        if (isFilesUri) {
+            when (mediaType.lowercase()) {
+                "image" -> {
                     conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE}")
+                    conditions.add("${MediaStore.MediaColumns.SIZE} > 1024")
                 }
-                conditions.add("${MediaStore.MediaColumns.SIZE} > 1024")
-            }
-            "audio" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                "audio" -> {
                     conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO}")
                 }
-                if (options.albumName != null) {
-                    conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
-                }
-                if (options.artistName != null) {
-                    conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
-                }
-            }
-            "video" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                "video" -> {
                     conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO}")
+                    conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
                 }
-                conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
-            }
-            "document" -> {
-                conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE}")
-                conditions.add("(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')")
-                conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'audio/%'")
-                conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'video/%'")
-                conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'image/%'")
-            }
-            "all" -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                "document" -> {
+                    conditions.add("${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE}")
+                    conditions.add("(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')")
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'audio/%'")
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'video/%'")
+                    conditions.add("${MediaStore.MediaColumns.MIME_TYPE} NOT LIKE 'image/%'")
+                }
+                "all" -> {
                     conditions.add("(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE} OR " +
                                  "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO} OR " +
                                  "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO} OR " +
                                  "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ${MediaStore.Files.FileColumns.MEDIA_TYPE_NONE} AND " +
                                  "(${MediaStore.MediaColumns.MIME_TYPE} LIKE 'application/%' OR ${MediaStore.MediaColumns.MIME_TYPE} LIKE 'text/%')))")
                 }
+            }
+        } else {
+            // For specific media type URIs, add type-specific filters
+            when (mediaType.lowercase()) {
+                "image" -> {
+                    conditions.add("${MediaStore.MediaColumns.SIZE} > 1024")
+                }
+                "video" -> {
+                    conditions.add("${MediaStore.Video.Media.DURATION} > 1000")
+                }
+                // Note: No filters for audio when using Audio content URI directly
+            }
+        }
+
+        // Add optional filters for audio (works for both Files and Audio URIs)
+        if (mediaType.lowercase() == "audio") {
+            if (options.albumName != null) {
+                conditions.add("${MediaStore.Audio.Media.ALBUM} = ?")
+            }
+            if (options.artistName != null) {
+                conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
             }
         }
 
@@ -646,5 +675,182 @@ class MediaStoreHelper(private val context: Context) {
         val audioExtensions = listOf("mp3", "wav", "m4a", "ogg", "flac", "aac", "wma")
         val extension = filePath.substringAfterLast('.').lowercase()
         return audioExtensions.contains(extension)
+    }
+
+    private fun queryAudioFilesLegacy(options: MediaQueryOptions): List<JSObject> {
+        val files = mutableListOf<JSObject>()
+        
+        // Primary strategy: Use Audio content URI directly (most reliable)
+        val audioFiles = queryMediaStoreAudioDirect(options)
+        files.addAll(audioFiles)
+        
+        // Fallback strategy: Query Files URI if Audio URI didn't return results
+        if (files.isEmpty()) {
+            val fallbackFiles = queryMediaStore(MediaStore.Files.getContentUri("external"), "audio", options)
+            files.addAll(fallbackFiles)
+        }
+        
+        // Additional strategy for Android 9 and below: Manual external storage scan
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            val externalFiles = queryExternalStorageLegacy(options)
+            // Deduplicate based on file path
+            val existingPaths = files.mapNotNull { it.optString("uri") }.toSet()
+            externalFiles.forEach { file ->
+                val fileUri = file.optString("uri")
+                if (fileUri != null && !existingPaths.contains(fileUri)) {
+                    files.add(file)
+                }
+            }
+        }
+        
+        return files
+    }
+
+    private fun queryMediaStoreAudioDirect(options: MediaQueryOptions): List<JSObject> {
+        val files = mutableListOf<JSObject>()
+        
+        // Use audio-specific projection for Audio content URI
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DISPLAY_NAME,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.SIZE,
+            MediaStore.Audio.Media.MIME_TYPE,
+            MediaStore.Audio.Media.DATE_ADDED,
+            MediaStore.Audio.Media.DATE_MODIFIED,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.ALBUM_ARTIST,
+            MediaStore.Audio.Media.COMPOSER,
+            MediaStore.Audio.Media.GENRE,
+            MediaStore.Audio.Media.TRACK,
+            MediaStore.Audio.Media.YEAR
+        )
+        
+        val contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        val selection = buildSelection(options, "audio", contentUri)
+        val selectionArgs = buildSelectionArgs(options)
+        val sortOrder = buildSortOrder(options)
+
+        try {
+            val cursor = context.contentResolver.query(
+                contentUri,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )
+
+            cursor?.use {
+                while (it.moveToNext()) {
+                    val mediaObject = JSObject()
+                    populateMediaObject(mediaObject, it, "audio")
+                    files.add(mediaObject)
+                }
+            }
+        } catch (e: Exception) {
+            // Log error but don't fail completely
+            android.util.Log.e("MediaStoreHelper", "Error querying audio files directly: ${e.message}")
+        }
+
+        return files
+    }
+
+    private fun queryExternalStorageLegacy(options: MediaQueryOptions): List<JSObject> {
+        val files = mutableListOf<JSObject>()
+        
+        // For Android 9 and below, manually check common external storage paths
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            try {
+                // Try to get external storage volumes manually
+                val externalDirs = context.getExternalFilesDirs(null)
+                externalDirs?.forEach { externalDir ->
+                    if (externalDir != null && externalDir.absolutePath.contains("storage") && 
+                        !externalDir.absolutePath.contains("emulated/0")) {
+                        // This might be an SD card or external storage
+                        val storagePath = externalDir.absolutePath.split("/Android")[0]
+                        scanExternalStorageForAudio(storagePath, files, options)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.w("MediaStoreHelper", "Could not scan external storage: ${e.message}")
+            }
+        }
+        
+        return files
+    }
+
+    private fun scanExternalStorageForAudio(storagePath: String, files: MutableList<JSObject>, options: MediaQueryOptions) {
+        try {
+            // Query the Files content URI with a specific external volume path filter
+            val projection = arrayOf(
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.DATA,
+                MediaStore.Files.FileColumns.SIZE,
+                MediaStore.Files.FileColumns.MIME_TYPE,
+                MediaStore.Files.FileColumns.DATE_ADDED,
+                MediaStore.Files.FileColumns.DATE_MODIFIED
+            )
+            
+            val selection = "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? AND ${MediaStore.Files.FileColumns.DATA} LIKE ?"
+            val selectionArgs = arrayOf(
+                MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO.toString(),
+                "$storagePath%"
+            )
+            
+            val cursor = context.contentResolver.query(
+                MediaStore.Files.getContentUri("external"),
+                projection,
+                selection,
+                selectionArgs,
+                buildSortOrder(options)
+            )
+
+            cursor?.use {
+                while (it.moveToNext()) {
+                    val mediaObject = JSObject()
+                    populateMediaObjectBasic(mediaObject, it, "audio")
+                    files.add(mediaObject)
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("MediaStoreHelper", "Error scanning external storage at $storagePath: ${e.message}")
+        }
+    }
+
+    private fun populateMediaObjectBasic(mediaObject: JSObject, cursor: Cursor, mediaType: String) {
+        // Basic population for Files content URI queries (limited columns available)
+        val idColumn = cursor.getColumnIndex(MediaStore.Files.FileColumns._ID)
+        val displayNameColumn = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME)
+        val dataColumn = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA)
+        val sizeColumn = cursor.getColumnIndex(MediaStore.Files.FileColumns.SIZE)
+        val mimeTypeColumn = cursor.getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE)
+        val dateAddedColumn = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED)
+        val dateModifiedColumn = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_MODIFIED)
+
+        if (idColumn >= 0) mediaObject.put("id", cursor.getString(idColumn))
+        if (displayNameColumn >= 0) mediaObject.put("displayName", cursor.getString(displayNameColumn))
+        if (dataColumn >= 0) {
+            val filePath = cursor.getString(dataColumn)
+            mediaObject.put("uri", "file://$filePath")
+            mediaObject.put("isExternal", filePath.contains("/storage/") && !filePath.contains("/storage/emulated/0/"))
+        }
+        if (sizeColumn >= 0) mediaObject.put("size", cursor.getLong(sizeColumn))
+        if (mimeTypeColumn >= 0) mediaObject.put("mimeType", cursor.getString(mimeTypeColumn))
+        if (dateAddedColumn >= 0) mediaObject.put("dateAdded", cursor.getLong(dateAddedColumn) * 1000L)
+        if (dateModifiedColumn >= 0) mediaObject.put("dateModified", cursor.getLong(dateModifiedColumn) * 1000L)
+        
+        mediaObject.put("mediaType", mediaType)
+        
+        // For audio files, try to add basic metadata if available
+        if (mediaType == "audio") {
+            // Add default values that can be enhanced later
+            mediaObject.put("title", mediaObject.optString("displayName", "Unknown"))
+            mediaObject.put("artist", "Unknown Artist")
+            mediaObject.put("album", "Unknown Album")
+        }
     }
 }
