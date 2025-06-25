@@ -529,7 +529,6 @@ class MediaStoreHelper(private val context: Context) {
                 if (options.artistName != null) {
                     conditions.add("${MediaStore.Audio.Media.ARTIST} = ?")
                 }
-                conditions.add("${MediaStore.Audio.Media.DURATION} > 5000")
             }
             "video" -> {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
