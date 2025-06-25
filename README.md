@@ -370,23 +370,21 @@ We're actively working on iOS support with full Photos framework integration. Ex
 - Access to Photos and Videos
 - Music library integration
 - Album and artist metadata
-- Expected release: **Q2 2025**
 
 ## 💝 Support This Project
 
 Help me improve this plugin and build better tools for the community!
 
-### 💳 Fiat Currency Support
-- **PayPal**: [paypal.me/odiondeveloper](https://paypal.me/odiondeveloper)
-- **Ko-fi**: [ko-fi.com/odiondeveloper](https://ko-fi.com/odiondeveloper)
-- **GitHub Sponsors**: [github.com/sponsors/odiondeveloper](https://github.com/sponsors/odiondeveloper)
-- **Buy Me a Coffee**: [buymeacoffee.com/odiondeveloper](https://buymeacoffee.com/odiondeveloper)
+### 🤝 GitHub Sponsors
+- **GitHub Sponsors**: [github.com/sponsors/odion-cloud](https://github.com/sponsors/odion-cloud)
 
 ### ₿ Cryptocurrency Support
-- **Bitcoin (BTC)**: `bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh`
-- **Ethereum (ETH)**: `0x742d35Cc6634C0532925a3b8D09E66b0e17236c1`
-- **USDT (TRC20)**: `TLNGFxWKBpB5a6RPB1XLZi5xzWVx3e1XQ3`
-- **Binance Coin (BNB)**: `bnb136ns6lfw4zs5hg4n85vdthaad7hq5m4gtkgf23`
+- **Bitcoin (BTC)**: `bc1q2k0ftm2fgst22kzj683e8gpau3spfa23ttkg26`
+- **USDT (Ethereum)**: `0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1`
+- **USDT (BNB Chain)**: `0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1`
+- **USDT (TRON/TRC20)**: `TXVy781mQ2tCuQ1BrattXWueUHp1wB5fwt`
+- **USDT (Solana)**: `GZ8jmSUUzc4dQF7Cthj2atomvpBZWqccR81N9DL4o1Be`
+- **USDT (TON)**: `UQAthXSNIlauj3SrzpDAU4VYxgEVV3niOSmeTPCtMBKGfEAE`
 
 ### 💻 Why Support?
 Your contributions help me:

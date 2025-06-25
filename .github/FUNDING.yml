@@ -1,0 +1,11 @@
+# GitHub Sponsors configuration
+# This file enables the "Sponsor" button on your repository
+# For more info: https://docs.github.com/en/github/administering-a-repository/displaying-a-sponsor-button-in-your-repository
+
+github: odion-cloud
+
+# Custom funding URLs (cryptocurrency addresses)
+custom: [
+  "https://github.com/sponsors/odion-cloud",
+  "https://github.com/odion-cloud/capacitor-mediastore#-support-this-project"
+] 

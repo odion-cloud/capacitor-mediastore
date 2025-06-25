@@ -314,16 +314,170 @@
         </header>
 
         <div class="tabs">
-            <button class="tab active" onclick="showTab('overview')">Overview</button>
+            <button class="tab active" onclick="showTab('support')">Support</button>
+            <button class="tab" onclick="showTab('overview')">Overview</button>
             <button class="tab" onclick="showTab('setup')">Setup</button>
             <button class="tab" onclick="showTab('usage')">Usage</button>
             <button class="tab" onclick="showTab('examples')">Examples</button>
             <button class="tab" onclick="showTab('api')">API</button>
-            <button class="tab" onclick="showTab('support')">Support</button>
+        </div>
+
+        <!-- Support Tab -->
+        <div id="support" class="tab-content active">
+            <h2>Device Support & Platform Compatibility</h2>
+
+            <h3>📱 Supported Devices</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h4>Android Devices</h4>
+                    <p><strong>Full Support</strong></p>
+                    <ul>
+                        <li>Android 6.0+ (API 23+)</li>
+                        <li>All phone manufacturers</li>
+                        <li>Tablets and foldables</li>
+                        <li>Internal & SD card storage</li>
+                        <li>All media types supported</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🍎</div>
+                    <h4>iOS Devices</h4>
+                    <p><strong>Coming Soon</strong></p>
+                    <ul>
+                        <li>iPhone iOS 12+</li>
+                        <li>iPad iPadOS 13+</li>
+                        <li>Photos & Videos access</li>
+                        <li>Music library integration</li>
+                        <li>Expected Q2 2025</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h4>Web Platform</h4>
+                    <p><strong>Development Only</strong></p>
+                    <ul>
+                        <li>Chrome, Firefox, Safari</li>
+                        <li>Mock data for testing</li>
+                        <li>No real file access</li>
+                        <li>Development fallback</li>
+                        <li>Not for production</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="alert alert-success">
+                <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration.
+            </div>
+
+            <h3>🏆 Android Version Compatibility</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Android Version</th>
+                        <th>API Level</th>
+                        <th>Support Level</th>
+                        <th>Features</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Android 14+</td>
+                        <td>API 34+</td>
+                        <td><span class="badge">✅ Full</span></td>
+                        <td>All features, visual media permissions</td>
+                    </tr>
+                    <tr>
+                        <td>Android 13</td>
+                        <td>API 33</td>
+                        <td><span class="badge">✅ Full</span></td>
+                        <td>Granular media permissions</td>
+                    </tr>
+                    <tr>
+                        <td>Android 10-12</td>
+                        <td>API 29-32</td>
+                        <td><span class="badge">✅ Full</span></td>
+                        <td>Scoped storage, external volumes</td>
+                    </tr>
+                    <tr>
+                        <td>Android 6-9</td>
+                        <td>API 23-28</td>
+                        <td><span class="badge">✅ Full</span></td>
+                        <td>Runtime permissions, SD card access</td>
+                    </tr>
+                    <tr>
+                        <td>Android 5</td>
+                        <td>API 21-22</td>
+                        <td><span class="badge">⚠️ Basic</span></td>
+                        <td>Limited external storage access</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>💝 Support This Project</h3>
+            <p>Help me improve this plugin and build better tools for the community!</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <h4>GitHub Sponsors</h4>
+                    <p>Support through GitHub's official sponsorship program:</p>
+                    <ul>
+                        <li><strong>GitHub Sponsors:</strong><br><a href="https://github.com/sponsors/odion-cloud" target="_blank">github.com/sponsors/odion-cloud</a></li>
+                    </ul>
+                    <div class="alert alert-info" style="margin-top: 1rem;">
+                        <strong>💡 Recommended:</strong> GitHub Sponsors offers the most transparent and developer-friendly way to support open source projects.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">₿</div>
+                    <h4>Cryptocurrency Support</h4>
+                    <p>Support via crypto donations across multiple networks:</p>
+                    <ul>
+                        <li><strong>Bitcoin (BTC):</strong><br><code style="font-size: 0.8rem;">bc1q2k0ftm2fgst22kzj683e8gpau3spfa23ttkg26</code></li>
+                        <li><strong>USDT (Ethereum):</strong><br><code style="font-size: 0.8rem;">0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1</code></li>
+                        <li><strong>USDT (BNB Chain):</strong><br><code style="font-size: 0.8rem;">0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1</code></li>
+                        <li><strong>USDT (TRON/TRC20):</strong><br><code style="font-size: 0.8rem;">TXVy781mQ2tCuQ1BrattXWueUHp1wB5fwt</code></li>
+                        <li><strong>USDT (Solana):</strong><br><code style="font-size: 0.8rem;">GZ8jmSUUzc4dQF7Cthj2atomvpBZWqccR81N9DL4o1Be</code></li>
+                        <li><strong>USDT (TON):</strong><br><code style="font-size: 0.8rem;">UQAthXSNIlauj3SrzpDAU4VYxgEVV3niOSmeTPCtMBKGfEAE</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>💻 Why Support?</strong> Your contributions help me:
+                <ul style="margin: 0.5rem 0;">
+                    <li>Upgrade to better development hardware</li>
+                    <li>Improve my workspace and productivity</li>
+                    <li>Dedicate more time to open source projects</li>
+                    <li>Add iOS support and new features faster</li>
+                    <li>Provide better documentation and examples</li>
+                </ul>
+            </div>
+
+            <h3>🤝 Other Ways to Help</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>⭐ Star the Project</h4>
+                    <p>Give us a star on <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank">GitHub</a> to show your support!</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🐛 Report Issues</h4>
+                    <p>Help improve the plugin by reporting bugs and suggesting features.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📖 Improve Docs</h4>
+                    <p>Contribute to documentation, examples, and tutorials.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💬 Spread the Word</h4>
+                    <p>Share the plugin with other developers who might find it useful.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Overview Tab -->
-        <div id="overview" class="tab-content active">
+        <div id="overview" class="tab-content">
             <h2>What This Plugin Does</h2>
             <p>Get access to all media files on Android devices - including music, photos, videos, and files stored on SD cards. Perfect for building music players, photo galleries, and file managers.</p>
 
@@ -355,7 +509,7 @@
              </div>
 
              <div class="alert alert-info">
-                 <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration. Expected release: <strong>Q2 2025</strong>
+                 <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration.
              </div>
 
             <h3>Quick Example</h3>
@@ -839,163 +993,13 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
                 <li><code>duration</code> - Video length in milliseconds (videos only)</li>
             </ul>
 
-                         <div class="alert alert-info">
-                 <strong>Tip:</strong> Use <code>includeExternal: true</code> to access files stored on SD cards and external storage devices.
-             </div>
-         </div>
+            <div class="alert alert-info">
+                <strong>Tip:</strong> Use <code>includeExternal: true</code> to access files stored on SD cards and external storage devices.
+            </div>
+        </div>
 
-         <!-- Support Tab -->
-         <div id="support" class="tab-content">
-             <h2>Device Support & Platform Compatibility</h2>
 
-             <h3>📱 Supported Devices</h3>
-             <div class="feature-grid">
-                 <div class="feature-card">
-                     <div class="feature-icon">🤖</div>
-                     <h4>Android Devices</h4>
-                     <p><strong>Full Support</strong></p>
-                     <ul>
-                         <li>Android 6.0+ (API 23+)</li>
-                         <li>All phone manufacturers</li>
-                         <li>Tablets and foldables</li>
-                         <li>Internal & SD card storage</li>
-                         <li>All media types supported</li>
-                     </ul>
-                 </div>
-                 <div class="feature-card">
-                     <div class="feature-icon">🍎</div>
-                     <h4>iOS Devices</h4>
-                     <p><strong>Coming Soon</strong></p>
-                     <ul>
-                         <li>iPhone iOS 12+</li>
-                         <li>iPad iPadOS 13+</li>
-                         <li>Photos & Videos access</li>
-                         <li>Music library integration</li>
-                         <li>Expected Q2 2025</li>
-                     </ul>
-                 </div>
-                 <div class="feature-card">
-                     <div class="feature-icon">🌐</div>
-                     <h4>Web Platform</h4>
-                     <p><strong>Development Only</strong></p>
-                     <ul>
-                         <li>Chrome, Firefox, Safari</li>
-                         <li>Mock data for testing</li>
-                         <li>No real file access</li>
-                         <li>Development fallback</li>
-                         <li>Not for production</li>
-                     </ul>
-                 </div>
-             </div>
-
-             <div class="alert alert-success">
-                 <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration. Expected release in Q2 2025.
-             </div>
-
-             <h3>🏆 Android Version Compatibility</h3>
-             <table>
-                 <thead>
-                     <tr>
-                         <th>Android Version</th>
-                         <th>API Level</th>
-                         <th>Support Level</th>
-                         <th>Features</th>
-                     </tr>
-                 </thead>
-                 <tbody>
-                     <tr>
-                         <td>Android 14+</td>
-                         <td>API 34+</td>
-                         <td><span class="badge">✅ Full</span></td>
-                         <td>All features, visual media permissions</td>
-                     </tr>
-                     <tr>
-                         <td>Android 13</td>
-                         <td>API 33</td>
-                         <td><span class="badge">✅ Full</span></td>
-                         <td>Granular media permissions</td>
-                     </tr>
-                     <tr>
-                         <td>Android 10-12</td>
-                         <td>API 29-32</td>
-                         <td><span class="badge">✅ Full</span></td>
-                         <td>Scoped storage, external volumes</td>
-                     </tr>
-                     <tr>
-                         <td>Android 6-9</td>
-                         <td>API 23-28</td>
-                         <td><span class="badge">✅ Full</span></td>
-                         <td>Runtime permissions, SD card access</td>
-                     </tr>
-                     <tr>
-                         <td>Android 5</td>
-                         <td>API 21-22</td>
-                         <td><span class="badge">⚠️ Basic</span></td>
-                         <td>Limited external storage access</td>
-                     </tr>
-                 </tbody>
-             </table>
-
-             <h3>💝 Support This Project</h3>
-             <p>Help me improve this plugin and build better tools for the community!</p>
-
-             <div class="feature-grid">
-                 <div class="feature-card">
-                     <div class="feature-icon">💳</div>
-                     <h4>Fiat Currency Support</h4>
-                     <p>Support via traditional payment methods:</p>
-                     <ul>
-                         <li><strong>PayPal:</strong> <a href="https://paypal.me/odiondeveloper" target="_blank">paypal.me/odiondeveloper</a></li>
-                         <li><strong>Ko-fi:</strong> <a href="https://ko-fi.com/odiondeveloper" target="_blank">ko-fi.com/odiondeveloper</a></li>
-                         <li><strong>GitHub Sponsors:</strong> <a href="https://github.com/sponsors/odiondeveloper" target="_blank">github.com/sponsors/odiondeveloper</a></li>
-                         <li><strong>Buy Me a Coffee:</strong> <a href="https://buymeacoffee.com/odiondeveloper" target="_blank">buymeacoffee.com/odiondeveloper</a></li>
-                     </ul>
-                 </div>
-                 <div class="feature-card">
-                     <div class="feature-icon">₿</div>
-                     <h4>Cryptocurrency Support</h4>
-                     <p>Support via crypto donations:</p>
-                     <ul>
-                         <li><strong>Bitcoin (BTC):</strong><br><code style="font-size: 0.8rem;">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code></li>
-                         <li><strong>Ethereum (ETH):</strong><br><code style="font-size: 0.8rem;">0x742d35Cc6634C0532925a3b8D09E66b0e17236c1</code></li>
-                         <li><strong>USDT (TRC20):</strong><br><code style="font-size: 0.8rem;">TLNGFxWKBpB5a6RPB1XLZi5xzWVx3e1XQ3</code></li>
-                         <li><strong>Binance Coin (BNB):</strong><br><code style="font-size: 0.8rem;">bnb136ns6lfw4zs5hg4n85vdthaad7hq5m4gtkgf23</code></li>
-                     </ul>
-                 </div>
-             </div>
-
-             <div class="alert alert-info">
-                 <strong>💻 Why Support?</strong> Your contributions help me:
-                 <ul style="margin: 0.5rem 0;">
-                     <li>Upgrade to better development hardware</li>
-                     <li>Improve my workspace and productivity</li>
-                     <li>Dedicate more time to open source projects</li>
-                     <li>Add iOS support and new features faster</li>
-                     <li>Provide better documentation and examples</li>
-                 </ul>
-             </div>
-
-             <h3>🤝 Other Ways to Help</h3>
-             <div class="feature-grid">
-                 <div class="feature-card">
-                     <h4>⭐ Star the Project</h4>
-                     <p>Give us a star on <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank">GitHub</a> to show your support!</p>
-                 </div>
-                 <div class="feature-card">
-                     <h4>🐛 Report Issues</h4>
-                     <p>Help improve the plugin by reporting bugs and suggesting features.</p>
-                 </div>
-                 <div class="feature-card">
-                     <h4>📖 Improve Docs</h4>
-                     <p>Contribute to documentation, examples, and tutorials.</p>
-                 </div>
-                 <div class="feature-card">
-                     <h4>💬 Spread the Word</h4>
-                     <p>Share the plugin with other developers who might find it useful.</p>
-                 </div>
-             </div>
-         </div>
-     </div>
+    </div>
 
     <script>
         function showTab(tabName) {
