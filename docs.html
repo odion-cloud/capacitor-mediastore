@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capacitor MediaStore Plugin Documentation</title>
+    <title>Capacitor MediaStore Plugin - Easy Media Access for Android</title>
     <style>
         * {
             margin: 0;
@@ -16,59 +16,91 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: #333;
+            background: #f8fafc;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
 
         header {
-            background: #2563eb;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 2rem 0;
+            padding: 3rem 0;
             margin-bottom: 2rem;
+            border-radius: 16px;
+            text-align: center;
         }
 
         h1 {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
+            font-weight: 700;
         }
 
         .subtitle {
             font-size: 1.2rem;
             opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .quick-start {
+            background: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .quick-start:hover {
+            background: #059669;
+            transform: translateY(-2px);
         }
 
         .tabs {
             display: flex;
             border-bottom: 2px solid #e5e7eb;
             margin-bottom: 2rem;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
         }
 
         .tab {
-            padding: 1rem 2rem;
+            padding: 1rem 1.5rem;
             cursor: pointer;
             border: none;
             background: none;
             font-size: 1rem;
             color: #6b7280;
             transition: all 0.3s;
+            flex: 1;
+            text-align: center;
         }
 
         .tab.active {
-            color: #2563eb;
-            border-bottom: 2px solid #2563eb;
+            color: #667eea;
+            background: #f0f4ff;
+            border-bottom: 3px solid #667eea;
         }
 
         .tab:hover {
-            color: #2563eb;
+            color: #667eea;
             background: #f8fafc;
         }
 
         .tab-content {
             display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .tab-content.active {
@@ -77,13 +109,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .code-block {
@@ -93,75 +120,133 @@
             border-radius: 8px;
             margin: 1rem 0;
             overflow-x: auto;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            position: relative;
         }
 
         .code-block pre {
             margin: 0;
+            font-size: 0.9rem;
         }
 
-        .highlight {
-            background: #fef3c7;
-            padding: 0.2rem 0.4rem;
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #374151;
+            color: white;
+            border: none;
+            padding: 5px 10px;
             border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
         }
 
-        .warning {
-            background: #fef2f2;
-            border-left: 4px solid #ef4444;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
+        .copy-btn:hover {
+            background: #4b5563;
         }
 
-        .success {
-            background: #f0fdf4;
-            border-left: 4px solid #22c55e;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
-        }
-
-        .info {
-            background: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
-        }
-
-        .grid {
+        .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
             margin: 2rem 0;
         }
 
-        .card {
+        .feature-card {
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
         }
 
-        .version-badge {
-            display: inline-block;
-            background: #3b82f6;
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            color: #15803d;
+        }
+
+        .alert-warning {
+            background: #fefce8;
+            border-color: #eab308;
+            color: #a16207;
+        }
+
+        .method-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .method-name {
+            font-family: 'Fira Code', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .step {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-number {
+            background: #667eea;
             color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.875rem;
-            margin: 0.25rem 0.5rem 0.25rem 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 1rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        th,
-        td {
+        th, td {
             padding: 0.75rem;
             text-align: left;
             border-bottom: 1px solid #e5e7eb;
@@ -170,352 +255,297 @@
         th {
             background: #f8fafc;
             font-weight: 600;
+            color: #374151;
         }
 
-        .method-signature {
-            font-family: 'Monaco', 'Consolas', monospace;
-            background: #f1f5f9;
-            padding: 0.5rem;
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            margin: 0.125rem;
+        }
+
+        .example-output {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        h2 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            color: #374151;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.3rem;
+        }
+
+        h4 {
+            color: #4b5563;
+            margin: 1rem 0 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 0.2rem 0.4rem;
             border-radius: 4px;
+            font-weight: 600;
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <div class="container">
-            <h1>Capacitor MediaStore Plugin</h1>
-            <p class="subtitle">Complete access to Android MediaStore API and iOS Photos framework</p>
-        </div>
-    </header>
-
     <div class="container">
+        <header>
+            <h1>📱 Capacitor MediaStore Plugin</h1>
+            <p class="subtitle">Simple and powerful media access for your Android apps</p>
+            <a href="#installation" class="quick-start" onclick="showTab('setup')">Get Started Now →</a>
+        </header>
+
         <div class="tabs">
-            <button class="tab active" onclick="showTab('installation')">Installation</button>
-            <button class="tab" onclick="showTab('permissions')">Permissions</button>
+            <button class="tab active" onclick="showTab('overview')">Overview</button>
+            <button class="tab" onclick="showTab('setup')">Setup</button>
             <button class="tab" onclick="showTab('usage')">Usage</button>
-            <button class="tab" onclick="showTab('api')">API Reference</button>
             <button class="tab" onclick="showTab('examples')">Examples</button>
-            <button class="tab" onclick="showTab('troubleshooting')">Troubleshooting</button>
+            <button class="tab" onclick="showTab('api')">API</button>
+            <button class="tab" onclick="showTab('support')">Support</button>
         </div>
 
-        <!-- Installation Tab -->
-        <div id="installation" class="tab-content active">
-            <h2>Installation</h2>
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <h2>What This Plugin Does</h2>
+            <p>Get access to all media files on Android devices - including music, photos, videos, and files stored on SD cards. Perfect for building music players, photo galleries, and file managers.</p>
 
-            <div class="code-block">
-                <pre>npm install @odion-cloud/capacitor-mediastore
-npx cap sync</pre>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎵</div>
+                    <h4>Music & Audio Files</h4>
+                    <p>Access all music files with rich metadata like artist, album, duration, and album art.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h4>Photos & Videos</h4>
+                    <p>Browse device photos and videos with dimensions, file sizes, and creation dates.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h4>SD Card Support</h4>
+                    <p>Access files stored on external SD cards and removable storage devices.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Fast & Reliable</h4>
+                    <p>Uses Android's native MediaStore API for fast, indexed access to media files.</p>
+                </div>
             </div>
 
-            <h3>Android Setup</h3>
-            <p>Add permissions to <code>android/app/src/main/AndroidManifest.xml</code>:</p>
+                         <div class="alert alert-success">
+                 <strong>Works with all Android versions!</strong> From Android 6.0 to the latest versions, with automatic permission handling.
+             </div>
 
+             <div class="alert alert-info">
+                 <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration. Expected release: <strong>Q2 2025</strong>
+             </div>
+
+            <h3>Quick Example</h3>
             <div class="code-block">
-                <pre>&lt;!-- Legacy permissions for Android 6-12 --&gt;
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Get all music files from device (including SD card)
+const music = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  includeExternal: true
+});
+
+console.log(`Found ${music.totalCount} songs!`);
+music.media.forEach(song => {
+  console.log(`${song.title} by ${song.artist}`);
+});</pre>
+            </div>
+        </div>
+
+        <!-- Setup Tab -->
+        <div id="setup" class="tab-content">
+            <h2>Getting Started</h2>
+
+            <div class="step">
+                <h3><span class="step-number">1</span>Install the Plugin</h3>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>npm install @odion-cloud/capacitor-mediastore
+npx cap sync</pre>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">2</span>Add Android Permissions</h3>
+                <p>Add these permissions to <span class="highlight">android/app/src/main/AndroidManifest.xml</span>:</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;!-- For Android 6-12 --&gt;
 &lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
                  android:maxSdkVersion="32" /&gt;
-&lt;uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
-                 android:maxSdkVersion="29" /&gt;
 
-&lt;!-- Granular permissions for Android 13+ --&gt;
+&lt;!-- For Android 13+ --&gt;
 &lt;uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /&gt;
 &lt;uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /&gt;
-&lt;uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /&gt;
-
-&lt;!-- Visual media permissions for Android 14+ --&gt;
-&lt;uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" /&gt;</pre>
-            </div>
-
-            <h3>iOS Setup</h3>
-            <p>Add usage descriptions to <code>ios/App/App/Info.plist</code>:</p>
-
-            <div class="code-block">
-                <pre>&lt;key&gt;NSPhotoLibraryUsageDescription&lt;/key&gt;
-&lt;string&gt;This app needs access to your photo library to manage media files&lt;/string&gt;
-&lt;key&gt;NSPhotoLibraryAddUsageDescription&lt;/key&gt;
-&lt;string&gt;This app needs access to save media files to your photo library&lt;/string&gt;</pre>
-            </div>
-
-            <div class="grid">
-                <div class="card">
-                    <h4>Android Versions</h4>
-                    <span class="version-badge">Android 6-12</span> READ_EXTERNAL_STORAGE<br>
-                    <span class="version-badge">Android 13+</span> Granular media permissions<br>
-                    <span class="version-badge">Android 14+</span> Visual media permissions
-                </div>
-                <div class="card">
-                    <h4>Supported Platforms</h4>
-                    <span class="version-badge">Android</span> Full MediaStore API<br>
-                    <span class="version-badge">iOS</span> Photos framework<br>
-                    <span class="version-badge">Web</span> Development fallback
+&lt;uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /&gt;</pre>
                 </div>
             </div>
-        </div>
 
-        <!-- Permissions Tab -->
-        <div id="permissions" class="tab-content">
-            <h2>Permissions</h2>
-
-            <div class="info">
-                <strong>Important:</strong> This plugin automatically shows native permission dialogs. No additional
-                setup needed beyond AndroidManifest.xml and Info.plist configuration.
+            <div class="step">
+                <h3><span class="step-number">3</span>iOS Setup (Optional)</h3>
+                <p>If you plan to support iOS, add to <span class="highlight">ios/App/App/Info.plist</span>:</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;key&gt;NSPhotoLibraryUsageDescription&lt;/key&gt;
+&lt;string&gt;This app needs access to your photos and media&lt;/string&gt;</pre>
+                </div>
             </div>
 
-            <h3>Basic Permission Flow</h3>
-            <div class="code-block">
-                <pre>import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
-
-// Check current permissions
-const current = await CapacitorMediaStore.checkPermissions();
-console.log('Current permissions:', current);
-
-// Request all permissions
-const all = await CapacitorMediaStore.requestPermissions();
-console.log('All permissions result:', all);</pre>
-            </div>
-
-            <h3>Granular Permission Types</h3>
-            <div class="code-block">
-                <pre>// Request only audio permissions (music apps)
-await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
-
-// Request images and video (gallery apps)
-await CapacitorMediaStore.requestPermissions({ types: ['images', 'video'] });
-
-// Request specific document access
-await CapacitorMediaStore.requestPermissions({ types: ['document'] });</pre>
-            </div>
-
-            <h3>Permission States</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>State</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>granted</code></td>
-                        <td>Permission granted</td>
-                        <td>Can access media</td>
-                    </tr>
-                    <tr>
-                        <td><code>denied</code></td>
-                        <td>Permission denied</td>
-                        <td>Show explanation or guide to settings</td>
-                    </tr>
-                    <tr>
-                        <td><code>prompt</code></td>
-                        <td>Permission not requested</td>
-                        <td>Call requestPermissions()</td>
-                    </tr>
-                    <tr>
-                        <td><code>prompt-with-rationale</code></td>
-                        <td>Previously denied</td>
-                        <td>Show rationale then request</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="warning">
-                <strong>Android Version Differences:</strong> Android 13+ requires separate permissions for images,
-                audio, and video. Android 12 and below uses a single READ_EXTERNAL_STORAGE permission.
+            <div class="alert alert-info">
+                <strong>That's it!</strong> The plugin will automatically handle permission requests when you use it. No additional setup needed.
             </div>
         </div>
 
         <!-- Usage Tab -->
         <div id="usage" class="tab-content">
-            <h2>Usage</h2>
+            <h2>How to Use</h2>
 
-            <h3>Basic Import</h3>
+            <h3>1. Import the Plugin</h3>
             <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 <pre>import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';</pre>
             </div>
 
-            <h3>Get All Media Files</h3>
+            <h3>2. Request Permissions</h3>
             <div class="code-block">
-                <pre>const result = await CapacitorMediaStore.getMedias({
-  limit: 100,
-  offset: 0,
-  sortBy: 'DATE_ADDED',
-  sortOrder: 'DESC',
-  includeExternal: true // Include SD card
-});
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Request all permissions
+const permissions = await CapacitorMediaStore.requestPermissions();
 
-console.log('Total files:', result.totalCount);
-console.log('Files:', result.media);</pre>
+// Or request specific types only
+const audioPermission = await CapacitorMediaStore.requestPermissions({
+  types: ['audio']  // Only ask for music access
+});</pre>
             </div>
 
-            <h3>Get Media by Type</h3>
+            <h3>3. Get Media Files</h3>
+            
+            <h4>Get All Media</h4>
             <div class="code-block">
-                <pre>// Get audio files
-const audioFiles = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'audio',
-  sortBy: 'TITLE',
-  sortOrder: 'ASC',
-  includeExternal: true
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>const allMedia = await CapacitorMediaStore.getMedias({
+  limit: 100,              // Get first 100 files
+  includeExternal: true    // Include SD card files
 });
 
-// Get images
-const images = await CapacitorMediaStore.getMediasByType({
+console.log(`Total files: ${allMedia.totalCount}`);</pre>
+            </div>
+
+            <h4>Get Specific Types</h4>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Get all music files
+const music = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  sortBy: 'TITLE',
+  sortOrder: 'ASC'
+});
+
+// Get all photos  
+const photos = await CapacitorMediaStore.getMediasByType({
   mediaType: 'image',
   limit: 50
 });
 
-// Get documents (PDF, DOC, etc.)
+// Get all videos
+const videos = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'video'
+});
+
+// Get documents (PDF, DOC, TXT, etc.)
 const documents = await CapacitorMediaStore.getMediasByType({
   mediaType: 'document'
 });</pre>
             </div>
 
-            <h3>Get Albums</h3>
+            <h3>4. Access File Information</h3>
             <div class="code-block">
-                <pre>const albums = await CapacitorMediaStore.getAlbums();
-console.log('Albums found:', albums.albums.length);</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Each file includes detailed information
+music.media.forEach(song => {
+  console.log('Title:', song.title);
+  console.log('Artist:', song.artist);
+  console.log('Album:', song.album);
+  console.log('Duration:', song.duration + 'ms');
+  console.log('File size:', song.size + ' bytes');
+  console.log('SD Card?:', song.isExternal);
+});</pre>
             </div>
 
-            <h3>Get Detailed Metadata</h3>
-            <div class="code-block">
-                <pre>const metadata = await CapacitorMediaStore.getMediaMetadata({
-  filePath: 'file:///storage/emulated/0/Music/song.mp3'
-});
-
-console.log('Song details:', metadata.media);</pre>
-            </div>
-
-            <div class="success">
-                <strong>SD Card Support:</strong> Set <code>includeExternal: true</code> to access SD card files. This
-                works across all Android versions.
-            </div>
-        </div>
-
-        <!-- API Reference Tab -->
-        <div id="api" class="tab-content">
-            <h2>API Reference</h2>
-
-            <h3>Methods</h3>
-
-            <div class="card">
-                <h4>checkPermissions()</h4>
-                <div class="method-signature">checkPermissions(): Promise&lt;PermissionStatus&gt;</div>
-                <p>Check current permission status without requesting.</p>
-            </div>
-
-            <div class="card">
-                <h4>requestPermissions()</h4>
-                <div class="method-signature">requestPermissions(options?: RequestPermissionsOptions):
-                    Promise&lt;PermissionStatus&gt;</div>
-                <p>Request media permissions with native dialogs.</p>
-                <strong>Options:</strong>
-                <ul>
-                    <li><code>types?: string[]</code> - Specific types: 'images', 'audio', 'video', 'document'</li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <h4>getMedias()</h4>
-                <div class="method-signature">getMedias(options?: MediaQueryOptions): Promise&lt;MediaResponse&gt;</div>
-                <p>Get all media files from device storage.</p>
-            </div>
-
-            <div class="card">
-                <h4>getMediasByType()</h4>
-                <div class="method-signature">getMediasByType(options: MediaTypeOptions): Promise&lt;MediaResponse&gt;
-                </div>
-                <p>Get media files by specific type.</p>
-                <strong>Media Types:</strong>
-                <ul>
-                    <li><code>image</code> - Photos, JPEG, PNG, etc.</li>
-                    <li><code>audio</code> - Music, MP3, AAC, etc.</li>
-                    <li><code>video</code> - Videos, MP4, AVI, etc.</li>
-                    <li><code>document</code> - PDF, DOC, TXT, etc.</li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <h4>getAlbums()</h4>
-                <div class="method-signature">getAlbums(): Promise&lt;AlbumResponse&gt;</div>
-                <p>Get all music albums from device.</p>
-            </div>
-
-            <div class="card">
-                <h4>getMediaMetadata()</h4>
-                <div class="method-signature">getMediaMetadata(options: MediaMetadataOptions):
-                    Promise&lt;MediaMetadataResponse&gt;</div>
-                <p>Get detailed metadata for a specific media file.</p>
-            </div>
-
-            <h3>Interfaces</h3>
-
-            <div class="code-block">
-                <pre>interface MediaQueryOptions {
-  limit?: number;              // Limit number of results
-  offset?: number;             // Pagination offset
-  sortOrder?: 'ASC' | 'DESC';  // Sort direction
-  sortBy?: string;             // Sort field
-  albumName?: string;          // Filter by album
-  artistName?: string;         // Filter by artist
-  includeExternal?: boolean;   // Include SD card
-}</pre>
-            </div>
-
-            <div class="code-block">
-                <pre>interface MediaFile {
-  id: string;
-  uri: string;
-  displayName: string;
-  size: number;
-  mimeType: string;
-  dateAdded: number;
-  dateModified: number;
-  mediaType: string;
-  width?: number;              // Images/videos
-  height?: number;             // Images/videos
-  duration?: number;           // Audio/video
-  title?: string;              // Audio
-  artist?: string;             // Audio
-  album?: string;              // Audio
-  isExternal?: boolean;        // SD card file
-}</pre>
+            <div class="alert alert-warning">
+                <strong>Remember:</strong> Always check permissions before accessing media files. The plugin will show permission dialogs automatically when needed.
             </div>
         </div>
 
         <!-- Examples Tab -->
         <div id="examples" class="tab-content">
-            <h2>Examples</h2>
+            <h2>Real-World Examples</h2>
 
-            <h3>Music Player App</h3>
+            <h3>🎵 Music Player App</h3>
             <div class="code-block">
-                <pre>async function loadMusicLibrary() {
-  // Request audio permissions
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>async function createMusicLibrary() {
+  // Ask for music access
   await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
   
-  // Get all audio files
+  // Get all songs (including from SD card)
   const result = await CapacitorMediaStore.getMediasByType({
     mediaType: 'audio',
     sortBy: 'TITLE',
-    sortOrder: 'ASC',
     includeExternal: true
   });
   
-  // Filter SD card songs
-  const sdCardSongs = result.media.filter(song => song.isExternal);
-  console.log(`Found ${sdCardSongs.length} songs on SD card`);
+  // Create playlist
+  const playlist = result.media.map(song => ({
+    id: song.id,
+    title: song.title || 'Unknown Song',
+    artist: song.artist || 'Unknown Artist',
+    album: song.album || 'Unknown Album',
+    duration: song.duration || 0,
+    filePath: song.uri,
+    isOnSDCard: song.isExternal
+  }));
   
-  return result.media;
+  console.log(`Created playlist with ${playlist.length} songs`);
+  return playlist;
 }</pre>
             </div>
 
-            <h3>Photo Gallery App</h3>
+            <div class="example-output">
+                <strong>Output:</strong><br>
+                Created playlist with 847 songs<br>
+                Song: "Bohemian Rhapsody" by Queen (SD Card: true)<br>
+                Song: "Hotel California" by Eagles (SD Card: false)
+            </div>
+
+            <h3>📸 Photo Gallery App</h3>
             <div class="code-block">
-                <pre>async function loadPhotoGallery() {
-  // Request image and video permissions
-  await CapacitorMediaStore.requestPermissions({ 
-    types: ['images', 'video'] 
-  });
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>async function createPhotoGallery() {
+  // Ask for photo access
+  await CapacitorMediaStore.requestPermissions({ types: ['images'] });
   
   // Get recent photos
   const photos = await CapacitorMediaStore.getMediasByType({
@@ -525,156 +555,447 @@ console.log('Song details:', metadata.media);</pre>
     limit: 100
   });
   
-  // Get recent videos
-  const videos = await CapacitorMediaStore.getMediasByType({
-    mediaType: 'video',
-    sortBy: 'DATE_ADDED',
-    sortOrder: 'DESC',
-    limit: 50
-  });
+  // Create gallery
+  const gallery = photos.media.map(photo => ({
+    id: photo.id,
+    name: photo.displayName,
+    size: `${photo.width}×${photo.height}`,
+    fileSize: Math.round(photo.size / 1024) + ' KB',
+    dateTaken: new Date(photo.dateAdded),
+    thumbnailPath: photo.uri
+  }));
   
-  return { photos: photos.media, videos: videos.media };
+  return gallery;
 }</pre>
             </div>
 
-            <h3>Document Manager App</h3>
+            <h3>🔍 Search Music by Artist</h3>
             <div class="code-block">
-                <pre>async function loadDocuments() {
-  // Request document permissions
-  await CapacitorMediaStore.requestPermissions({ types: ['document'] });
-  
-  // Get document files (PDF, DOC, etc.)
-  const documents = await CapacitorMediaStore.getMediasByType({
-    mediaType: 'document',
-    sortBy: 'DATE_MODIFIED',
-    sortOrder: 'DESC'
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>async function findSongsByArtist(artistName) {
+  const songs = await CapacitorMediaStore.getMediasByType({
+    mediaType: 'audio',
+    artistName: artistName,  // Filter by specific artist
+    sortBy: 'TITLE'
   });
   
-  // Filter by file type
-  const pdfFiles = documents.media.filter(doc => 
-    doc.mimeType === 'application/pdf'
-  );
-  
-  return { allDocs: documents.media, pdfs: pdfFiles };
-}</pre>
+  console.log(`Found ${songs.totalCount} songs by ${artistName}`);
+  return songs.media;
+}
+
+// Usage
+const beatlesSongs = await findSongsByArtist('The Beatles');
+const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
             </div>
 
-            <h3>Complete Permission Setup</h3>
-            <div class="code-block">
-                <pre>class MediaPermissionManager {
-  async setupPermissions() {
-    // Check current status
-    const current = await CapacitorMediaStore.checkPermissions();
-    
-    if (this.hasRequiredPermissions(current)) {
-      return { granted: true, permissions: current };
-    }
-    
-    // Request all permissions
-    const result = await CapacitorMediaStore.requestPermissions();
-    
-    return {
-      granted: this.hasRequiredPermissions(result),
-      permissions: result
-    };
-  }
-  
-  hasRequiredPermissions(permissions) {
-    // Check for any granted permission
-    return Object.values(permissions).some(state => state === 'granted');
-  }
-}</pre>
-            </div>
+                         <h3>💿 Get Music Albums</h3>
+             <div class="code-block">
+                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                 <pre>async function getMusicAlbums() {
+   await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
+   
+   const albums = await CapacitorMediaStore.getAlbums();
+   
+   albums.albums.forEach(album => {
+     console.log(`${album.name} by ${album.artist}`);
+     console.log(`${album.trackCount} tracks`);
+   });
+   
+   return albums.albums;
+ }</pre>
+             </div>
+
+             <h3>💾 Save Media File</h3>
+             <div class="code-block">
+                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                 <pre>async function saveAudioFile(audioData, fileName) {
+   await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
+   
+   const result = await CapacitorMediaStore.saveMedia({
+     data: audioData,           // Base64 encoded audio data
+     fileName: fileName,        // e.g., 'my-song.mp3'
+     mediaType: 'audio',
+     albumName: 'My Custom Album',
+     relativePath: 'MyApp/Audio'  // Optional custom folder
+   });
+   
+   if (result.success) {
+     console.log('File saved successfully at:', result.uri);
+     return result.uri;
+   } else {
+     console.error('Save failed:', result.error);
+   }
+ }</pre>
+             </div>
+
+             <h3>🔍 Get Detailed Metadata</h3>
+             <div class="code-block">
+                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                 <pre>async function getDetailedSongInfo(fileUri) {
+   const metadata = await CapacitorMediaStore.getMediaMetadata({
+     filePath: fileUri
+   });
+   
+   const song = metadata.media;
+   
+   console.log('🎵 Song Details:');
+   console.log(`Title: ${song.title}`);
+   console.log(`Artist: ${song.artist}`);
+   console.log(`Album: ${song.album}`);
+   console.log(`Duration: ${song.duration}ms`);
+   console.log(`Bitrate: ${song.bitrate} kbps`);
+   console.log(`Sample Rate: ${song.sampleRate} Hz`);
+   console.log(`Channels: ${song.channels === 1 ? 'Mono' : 'Stereo'}`);
+   console.log(`Genre: ${song.genre}`);
+   console.log(`Year: ${song.year}`);
+   
+   return song;
+ }</pre>
+             </div>
         </div>
 
-        <!-- Troubleshooting Tab -->
-        <div id="troubleshooting" class="tab-content">
-            <h2>Troubleshooting</h2>
+        <!-- API Tab -->
+        <div id="api" class="tab-content">
+            <h2>Complete API Reference</h2>
 
-            <h3>Permission Dialog Not Showing</h3>
-            <div class="warning">
-                <strong>Common Issues:</strong>
-                <ul>
-                    <li>Missing permissions in AndroidManifest.xml</li>
-                    <li>Missing usage descriptions in iOS Info.plist</li>
-                    <li>Testing on simulator instead of real device</li>
-                    <li>User already denied permissions permanently</li>
-                </ul>
+            <div class="method-card">
+                <div class="method-name">getMedias(options?)</div>
+                <p>Get all media files from the device (photos, music, videos).</p>
+                <div class="code-block">
+                    <pre>getMedias({
+  limit?: number;           // How many files to return
+  offset?: number;          // Skip first N files (for pagination)
+  sortBy?: string;          // 'DATE_ADDED', 'TITLE', 'SIZE'
+  sortOrder?: 'ASC' | 'DESC'; // Sort direction
+  includeExternal?: boolean;  // Include SD card files (default: true)
+})</pre>
+                </div>
             </div>
 
-            <h3>Android-Specific Issues</h3>
-
-            <h4>Audio Files Not Found (Android 12 and below)</h4>
-            <div class="info">
-                The plugin now uses MediaStore.Files.getContentUri() for Android 12 and below to ensure broader media
-                access including audio files.
+            <div class="method-card">
+                <div class="method-name">getMediasByType(options)</div>
+                <p>Get specific types of media files with filtering options.</p>
+                <div class="code-block">
+                    <pre>getMediasByType({
+  mediaType: 'audio' | 'image' | 'video' | 'document';
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+  includeExternal?: boolean;
+  albumName?: string;       // Filter by album (music only)
+  artistName?: string;      // Filter by artist (music only)
+})</pre>
+                </div>
             </div>
 
-            <h4>Document Files Not Filtering Correctly</h4>
-            <div class="info">
-                Document type now properly filters for PDF, DOC, TXT files and excludes media files (audio, video,
-                images).
+            <div class="method-card">
+                <div class="method-name">getAlbums()</div>
+                <p>Get all music albums from the device.</p>
+                <div class="code-block">
+                    <pre>getAlbums(): Promise&lt;{
+  albums: {
+    id: string;
+    name: string;
+    artist: string;
+    trackCount: number;
+    albumArtUri?: string;
+  }[];
+  totalCount: number;
+}&gt;</pre>
+                </div>
             </div>
 
-            <h3>Debug Permission Issues</h3>
-            <div class="code-block">
-                <pre>async function debugPermissions() {
-  console.log('Checking permissions...');
-  const current = await CapacitorMediaStore.checkPermissions();
-  console.log('Current permissions:', current);
-  
-  // Check each permission state
-  Object.entries(current).forEach(([key, value]) => {
-    console.log(`${key}: ${value}`);
-    if (value === 'denied') {
-      console.warn(`${key} is denied - user may need to enable in settings`);
-    }
-  });
-}</pre>
+            <div class="method-card">
+                <div class="method-name">requestPermissions(options?)</div>
+                <p>Request permissions to access media files.</p>
+                <div class="code-block">
+                    <pre>requestPermissions({
+  types?: ('audio' | 'images' | 'video')[];  // Specific permission types
+})</pre>
+                </div>
             </div>
 
-            <h3>Platform Differences</h3>
+                         <div class="method-card">
+                 <div class="method-name">saveMedia(options)</div>
+                 <p>Save a media file to device storage with proper metadata.</p>
+                 <div class="code-block">
+                     <pre>saveMedia({
+   data: string;             // Base64 data or file URI
+   fileName: string;         // Name for the file
+   mediaType: 'audio' | 'image' | 'video';
+   albumName?: string;       // Album to save in (optional)
+   relativePath?: string;    // Custom folder path (optional)
+ })</pre>
+                 </div>
+             </div>
+
+             <div class="method-card">
+                 <div class="method-name">getMediaMetadata(options)</div>
+                 <p>Get detailed metadata for a specific media file including audio tags.</p>
+                 <div class="code-block">
+                     <pre>getMediaMetadata({
+   filePath: string;         // URI of the media file
+ }): Promise&lt;{
+   media: MediaFile;         // File with complete metadata
+ }&gt;</pre>
+                 </div>
+             </div>
+
+             <div class="method-card">
+                 <div class="method-name">checkPermissions()</div>
+                 <p>Check current permission status without requesting.</p>
+                 <div class="code-block">
+                     <pre>checkPermissions(): Promise&lt;PermissionStatus&gt;</pre>
+                 </div>
+             </div>
+
+            <h3>Media File Properties</h3>
+            <p>Every media file returned includes these properties:</p>
+            
             <table>
                 <thead>
                     <tr>
-                        <th>Platform</th>
-                        <th>Behavior</th>
-                        <th>Notes</th>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Android 13+</td>
-                        <td>Granular permissions</td>
-                        <td>Separate dialogs for images, audio, video</td>
+                        <td><code>id</code></td>
+                        <td>string</td>
+                        <td>Unique file identifier</td>
                     </tr>
                     <tr>
-                        <td>Android 6-12</td>
-                        <td>Single storage permission</td>
-                        <td>READ_EXTERNAL_STORAGE covers all media</td>
+                        <td><code>uri</code></td>
+                        <td>string</td>
+                        <td>File path/URI</td>
                     </tr>
                     <tr>
-                        <td>iOS</td>
-                        <td>Photo library permission</td>
-                        <td>Single permission for all media types</td>
+                        <td><code>displayName</code></td>
+                        <td>string</td>
+                        <td>File name</td>
                     </tr>
                     <tr>
-                        <td>Web</td>
-                        <td>No permissions needed</td>
-                        <td>Development fallback only</td>
+                        <td><code>size</code></td>
+                        <td>number</td>
+                        <td>File size in bytes</td>
+                    </tr>
+                    <tr>
+                        <td><code>mimeType</code></td>
+                        <td>string</td>
+                        <td>File type (e.g., 'audio/mp3')</td>
+                    </tr>
+                    <tr>
+                        <td><code>dateAdded</code></td>
+                        <td>number</td>
+                        <td>When file was added (timestamp)</td>
+                    </tr>
+                    <tr>
+                        <td><code>mediaType</code></td>
+                        <td>string</td>
+                        <td>'audio', 'image', 'video', etc.</td>
+                    </tr>
+                    <tr>
+                        <td><code>isExternal</code></td>
+                        <td>boolean</td>
+                        <td>true if file is on SD card</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>Performance Tips</h3>
+                         <h4>Music Files Also Include:</h4>
+             <div class="feature-grid">
+                 <div class="feature-card">
+                     <h4>Basic Info</h4>
+                     <ul>
+                         <li><code>title</code> - Song title</li>
+                         <li><code>artist</code> - Artist name</li>
+                         <li><code>album</code> - Album name</li>
+                         <li><code>duration</code> - Length in milliseconds</li>
+                         <li><code>albumArtist</code> - Album artist</li>
+                         <li><code>composer</code> - Song composer</li>
+                     </ul>
+                 </div>
+                 <div class="feature-card">
+                     <h4>Extended Info</h4>
+                     <ul>
+                         <li><code>genre</code> - Music genre</li>
+                         <li><code>year</code> - Release year</li>
+                         <li><code>track</code> - Track number</li>
+                         <li><code>albumArtUri</code> - Album cover image</li>
+                         <li><code>bitrate</code> - Audio bitrate</li>
+                         <li><code>sampleRate</code> - Sample rate</li>
+                         <li><code>channels</code> - Audio channels (mono/stereo)</li>
+                     </ul>
+                 </div>
+             </div>
+
+            <h4>Images & Videos Also Include:</h4>
             <ul>
-                <li>Use <code>limit</code> and <code>offset</code> for pagination</li>
-                <li>Set <code>includeExternal: false</code> if SD card access not needed</li>
-                <li>Use specific <code>mediaType</code> instead of getting all media</li>
-                <li>Cache permission results to avoid repeated checks</li>
+                <li><code>width</code> - Image/video width in pixels</li>
+                <li><code>height</code> - Image/video height in pixels</li>
+                <li><code>duration</code> - Video length in milliseconds (videos only)</li>
             </ul>
-        </div>
-    </div>
+
+                         <div class="alert alert-info">
+                 <strong>Tip:</strong> Use <code>includeExternal: true</code> to access files stored on SD cards and external storage devices.
+             </div>
+         </div>
+
+         <!-- Support Tab -->
+         <div id="support" class="tab-content">
+             <h2>Device Support & Platform Compatibility</h2>
+
+             <h3>📱 Supported Devices</h3>
+             <div class="feature-grid">
+                 <div class="feature-card">
+                     <div class="feature-icon">🤖</div>
+                     <h4>Android Devices</h4>
+                     <p><strong>Full Support</strong></p>
+                     <ul>
+                         <li>Android 6.0+ (API 23+)</li>
+                         <li>All phone manufacturers</li>
+                         <li>Tablets and foldables</li>
+                         <li>Internal & SD card storage</li>
+                         <li>All media types supported</li>
+                     </ul>
+                 </div>
+                 <div class="feature-card">
+                     <div class="feature-icon">🍎</div>
+                     <h4>iOS Devices</h4>
+                     <p><strong>Coming Soon</strong></p>
+                     <ul>
+                         <li>iPhone iOS 12+</li>
+                         <li>iPad iPadOS 13+</li>
+                         <li>Photos & Videos access</li>
+                         <li>Music library integration</li>
+                         <li>Expected Q2 2025</li>
+                     </ul>
+                 </div>
+                 <div class="feature-card">
+                     <div class="feature-icon">🌐</div>
+                     <h4>Web Platform</h4>
+                     <p><strong>Development Only</strong></p>
+                     <ul>
+                         <li>Chrome, Firefox, Safari</li>
+                         <li>Mock data for testing</li>
+                         <li>No real file access</li>
+                         <li>Development fallback</li>
+                         <li>Not for production</li>
+                     </ul>
+                 </div>
+             </div>
+
+             <div class="alert alert-success">
+                 <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration. Expected release in Q2 2025.
+             </div>
+
+             <h3>🏆 Android Version Compatibility</h3>
+             <table>
+                 <thead>
+                     <tr>
+                         <th>Android Version</th>
+                         <th>API Level</th>
+                         <th>Support Level</th>
+                         <th>Features</th>
+                     </tr>
+                 </thead>
+                 <tbody>
+                     <tr>
+                         <td>Android 14+</td>
+                         <td>API 34+</td>
+                         <td><span class="badge">✅ Full</span></td>
+                         <td>All features, visual media permissions</td>
+                     </tr>
+                     <tr>
+                         <td>Android 13</td>
+                         <td>API 33</td>
+                         <td><span class="badge">✅ Full</span></td>
+                         <td>Granular media permissions</td>
+                     </tr>
+                     <tr>
+                         <td>Android 10-12</td>
+                         <td>API 29-32</td>
+                         <td><span class="badge">✅ Full</span></td>
+                         <td>Scoped storage, external volumes</td>
+                     </tr>
+                     <tr>
+                         <td>Android 6-9</td>
+                         <td>API 23-28</td>
+                         <td><span class="badge">✅ Full</span></td>
+                         <td>Runtime permissions, SD card access</td>
+                     </tr>
+                     <tr>
+                         <td>Android 5</td>
+                         <td>API 21-22</td>
+                         <td><span class="badge">⚠️ Basic</span></td>
+                         <td>Limited external storage access</td>
+                     </tr>
+                 </tbody>
+             </table>
+
+             <h3>💝 Support This Project</h3>
+             <p>Help me improve this plugin and build better tools for the community!</p>
+
+             <div class="feature-grid">
+                 <div class="feature-card">
+                     <div class="feature-icon">💳</div>
+                     <h4>Fiat Currency Support</h4>
+                     <p>Support via traditional payment methods:</p>
+                     <ul>
+                         <li><strong>PayPal:</strong> <a href="https://paypal.me/odiondeveloper" target="_blank">paypal.me/odiondeveloper</a></li>
+                         <li><strong>Ko-fi:</strong> <a href="https://ko-fi.com/odiondeveloper" target="_blank">ko-fi.com/odiondeveloper</a></li>
+                         <li><strong>GitHub Sponsors:</strong> <a href="https://github.com/sponsors/odiondeveloper" target="_blank">github.com/sponsors/odiondeveloper</a></li>
+                         <li><strong>Buy Me a Coffee:</strong> <a href="https://buymeacoffee.com/odiondeveloper" target="_blank">buymeacoffee.com/odiondeveloper</a></li>
+                     </ul>
+                 </div>
+                 <div class="feature-card">
+                     <div class="feature-icon">₿</div>
+                     <h4>Cryptocurrency Support</h4>
+                     <p>Support via crypto donations:</p>
+                     <ul>
+                         <li><strong>Bitcoin (BTC):</strong><br><code style="font-size: 0.8rem;">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code></li>
+                         <li><strong>Ethereum (ETH):</strong><br><code style="font-size: 0.8rem;">0x742d35Cc6634C0532925a3b8D09E66b0e17236c1</code></li>
+                         <li><strong>USDT (TRC20):</strong><br><code style="font-size: 0.8rem;">TLNGFxWKBpB5a6RPB1XLZi5xzWVx3e1XQ3</code></li>
+                         <li><strong>Binance Coin (BNB):</strong><br><code style="font-size: 0.8rem;">bnb136ns6lfw4zs5hg4n85vdthaad7hq5m4gtkgf23</code></li>
+                     </ul>
+                 </div>
+             </div>
+
+             <div class="alert alert-info">
+                 <strong>💻 Why Support?</strong> Your contributions help me:
+                 <ul style="margin: 0.5rem 0;">
+                     <li>Upgrade to better development hardware</li>
+                     <li>Improve my workspace and productivity</li>
+                     <li>Dedicate more time to open source projects</li>
+                     <li>Add iOS support and new features faster</li>
+                     <li>Provide better documentation and examples</li>
+                 </ul>
+             </div>
+
+             <h3>🤝 Other Ways to Help</h3>
+             <div class="feature-grid">
+                 <div class="feature-card">
+                     <h4>⭐ Star the Project</h4>
+                     <p>Give us a star on <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank">GitHub</a> to show your support!</p>
+                 </div>
+                 <div class="feature-card">
+                     <h4>🐛 Report Issues</h4>
+                     <p>Help improve the plugin by reporting bugs and suggesting features.</p>
+                 </div>
+                 <div class="feature-card">
+                     <h4>📖 Improve Docs</h4>
+                     <p>Contribute to documentation, examples, and tutorials.</p>
+                 </div>
+                 <div class="feature-card">
+                     <h4>💬 Spread the Word</h4>
+                     <p>Share the plugin with other developers who might find it useful.</p>
+                 </div>
+             </div>
+         </div>
+     </div>
 
     <script>
         function showTab(tabName) {
@@ -693,6 +1014,21 @@ console.log('Song details:', metadata.media);</pre>
 
             // Add active class to clicked tab
             event.target.classList.add('active');
+        }
+
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling;
+            const code = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = 'Copied!';
+                button.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.style.background = '#374151';
+                }, 2000);
+            });
         }
     </script>
 </body>

@@ -1,503 +1,411 @@
-# @odion-cloud/capacitor-mediastore
+# Capacitor MediaStore Plugin
 
-A Capacitor plugin that provides comprehensive access to Android MediaStore API for media file access and metadata retrieval. This plugin is specifically designed to overcome the limitations of Capacitor's filesystem API, particularly for accessing SD card storage and retrieving rich media metadata.
+A simple and powerful Capacitor plugin that lets you access media files (music, photos, videos) on Android devices, including SD card storage.
 
-## Features
-
-- ✅ Access all media types (audio, video, images, documents)
-- ✅ Scan both internal storage and SD card/external storage
-- ✅ Retrieve comprehensive metadata for audio files (title, artist, album, duration, etc.)
-- ✅ Query media files with filtering and sorting options
-- ✅ Save media files to device storage
-- ✅ Get album information
-- ✅ Proper Android permissions handling
-- ✅ TypeScript definitions included
-
-## Installation
+## 🚀 Quick Start
 
 ```bash
 npm install @odion-cloud/capacitor-mediastore
 npx cap sync
 ```
 
-## Android Setup
+## 📱 What This Plugin Does
 
-### 1. Add Permissions to AndroidManifest.xml
+- ✅ Get all your music files with details (title, artist, album, duration)
+- ✅ Access photos and videos from device storage
+- ✅ Read files from both internal storage and SD card
+- ✅ Get music albums and playlists
+- ✅ Save new media files to device
+- ✅ Works on all Android versions (6.0+)
 
-Add the following permissions to your `android/app/src/main/AndroidManifest.xml`:
+## 🛠️ Setup
+
+### Android Permissions
+
+Add these permissions to `android/app/src/main/AndroidManifest.xml`:
 
 ```xml
-<!-- Legacy permissions for Android 6-12 -->
+<!-- For Android 6-12 -->
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
                  android:maxSdkVersion="32" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
-                 android:maxSdkVersion="29" />
 
-<!-- Granular media permissions for Android 13+ (API 33+) -->
+<!-- For Android 13+ -->
 <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-
-<!-- Visual media permissions for Android 14+ (API 34+) -->
-<uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 ```
 
-### 2. Permission Behavior by Android Version
+### iOS Setup (Optional)
 
-- **Android 6-12 (API 23-32)**: Uses `READ_EXTERNAL_STORAGE` for all media access
-- **Android 13+ (API 33+)**: Uses granular permissions (`READ_MEDIA_IMAGES`, `READ_MEDIA_AUDIO`, `READ_MEDIA_VIDEO`)
-- **Android 14+ (API 34+)**: Adds `READ_MEDIA_VISUAL_USER_SELECTED` for selective media access
-
-## iOS Setup
-
-### 1. Add Usage Description to Info.plist
-
-Add the following to your `ios/App/App/Info.plist`:
+Add to `ios/App/App/Info.plist`:
 
 ```xml
 <key>NSPhotoLibraryUsageDescription</key>
-<string>This app needs access to your photo library to manage media files</string>
-<key>NSPhotoLibraryAddUsageDescription</key>
-<string>This app needs access to save media files to your photo library</string>
+<string>This app needs access to your photos and media</string>
 ```
 
-### 2. iOS Permission Behavior
+## 📖 Basic Usage
 
-- iOS uses the Photos framework for media access
-- Permission is requested automatically when calling media methods
-- Limited access (iOS 14+) is supported and treated as granted
-
-## Usage
-
-### Basic Setup
+### 1. Import the Plugin
 
 ```typescript
 import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
+```
 
-// Check current permission status
-const permissions = await CapacitorMediaStore.checkPermissions();
-console.log('Current permissions:', permissions);
+### 2. Request Permissions
 
-// Request all permissions
-const requestResult = await CapacitorMediaStore.requestPermissions();
-console.log('Permission request result:', requestResult);
+```typescript
+// Request all media permissions
+const permissions = await CapacitorMediaStore.requestPermissions();
 
-// Request specific permission types
-const specificPermissions = await CapacitorMediaStore.requestPermissions({
-  types: ['audio', 'images'] // Only request audio and image permissions
+// Or request specific types
+const audioOnly = await CapacitorMediaStore.requestPermissions({ 
+  types: ['audio'] 
 });
-console.log('Specific permissions:', specificPermissions);
 ```
 
-### Permission Types
-
-Available permission types for `requestPermissions()`:
-- `'images'` - Access to image files
-- `'audio'` - Access to audio files  
-- `'video'` - Access to video files
-
-If no types are specified, all available permissions will be requested.
-
-### Android Permission Examples
+### 3. Get Media Files
 
 ```typescript
-// For music/audio apps - request only audio permission
-await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
-
-// For photo/gallery apps - request images and videos
-await CapacitorMediaStore.requestPermissions({ types: ['images', 'video'] });
-
-// For full media access - request all permissions
-await CapacitorMediaStore.requestPermissions();
-```
-
-### Permission Status Values
-
-The plugin returns these permission states:
-- `'granted'` - Permission is granted and you can access media
-- `'denied'` - Permission was denied by the user
-- `'prompt'` - Permission needs to be requested (first time)
-- `'prompt-with-rationale'` - User denied before, show rationale
-
-### Platform Differences
-
-**Android Behavior:**
-- Shows native Android permission dialog
-- Handles different permission types based on Android version
-- Android 13+ shows separate dialogs for images, audio, video
-- Android 6-12 shows single storage permission dialog
-
-**iOS Behavior:**
-- Shows native iOS photo library permission dialog
-- Single permission covers all media types
-- Limited access (iOS 14+) is treated as granted
-
-### Troubleshooting Permissions
-
-If permission dialogs don't appear:
-
-1. **Check AndroidManifest.xml** - Ensure all required permissions are declared
-2. **Verify iOS Info.plist** - Ensure usage descriptions are present  
-3. **Test on real device** - Permission dialogs don't show in some simulators
-4. **Check app settings** - User may have denied permissions permanently
-
-```typescript
-// Debug permission issues
-const currentPermissions = await CapacitorMediaStore.checkPermissions();
-console.log('Current permission state:', currentPermissions);
-
-// If permissions are denied, you may need to guide users to app settings
-if (currentPermissions.readMediaAudio === 'denied') {
-  // Show instructions to manually enable in device settings
-}
-```
-
-// Get all media files (including from SD card)
+// Get all media files (photos, music, videos)
 const allMedia = await CapacitorMediaStore.getMedias({
   limit: 50,
-  offset: 0,
-  sortOrder: 'DESC',
-  sortBy: 'DATE_ADDED',
-  includeExternal: true // This enables SD card access
+  includeExternal: true // Include SD card files
 });
 
-console.log('Total media files:', allMedia.totalCount);
-console.log('Media files:', allMedia.media);
+console.log(`Found ${allMedia.totalCount} files`);
+```
 
-// Get only audio files with metadata
-const audioFiles = await CapacitorMediaStore.getMediasByType({
+### 4. Get Specific Media Types
+
+```typescript
+// Get all music files
+const music = await CapacitorMediaStore.getMediasByType({
   mediaType: 'audio',
-  limit: 100,
+  sortBy: 'TITLE',
   includeExternal: true
 });
 
-// Each audio file includes rich metadata
-audioFiles.media.forEach(file => {
-  console.log(`${file.title} by ${file.artist} (${file.album})`);
-  console.log(`Duration: ${file.duration}ms, Bitrate: ${file.bitrate}`);
+// Get all photos
+const photos = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'image',
+  limit: 100
 });
 
-// Get detailed metadata for a specific file
+// Get all videos
+const videos = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'video'
+});
+
+// Get documents (PDF, DOC, TXT, etc.)
+const documents = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'document'
+});
+```
+
+## 🎵 Music App Example
+
+```typescript
+async function buildMusicLibrary() {
+  // Ask for permission to read music files
+  await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
+  
+  // Get all songs from device (including SD card)
+  const result = await CapacitorMediaStore.getMediasByType({
+    mediaType: 'audio',
+    sortBy: 'TITLE',
+    includeExternal: true
+  });
+  
+  // Display songs with details
+  result.media.forEach(song => {
+    console.log(`${song.title} by ${song.artist}`);
+    console.log(`Album: ${song.album}, Duration: ${song.duration}ms`);
+    console.log(`Location: ${song.isExternal ? 'SD Card' : 'Internal'}`);
+  });
+  
+  return result.media;
+}
+```
+
+## 📸 Photo Gallery Example
+
+```typescript
+async function buildPhotoGallery() {
+  // Ask for permission to read photos
+  await CapacitorMediaStore.requestPermissions({ types: ['images'] });
+  
+  // Get recent photos
+  const photos = await CapacitorMediaStore.getMediasByType({
+    mediaType: 'image',
+    sortBy: 'DATE_ADDED',
+    sortOrder: 'DESC',
+    limit: 50
+  });
+  
+  return photos.media;
+}
+```
+
+## 📋 API Reference
+
+### Get All Media Files
+
+```typescript
+getMedias(options?: {
+  limit?: number;           // How many files to get
+  offset?: number;          // Skip first N files  
+  sortBy?: string;          // Sort by: 'DATE_ADDED', 'TITLE', 'SIZE'
+  sortOrder?: 'ASC' | 'DESC'; // Sort direction
+  includeExternal?: boolean; // Include SD card (default: true)
+})
+```
+
+### Get Media by Type
+
+```typescript
+getMediasByType(options: {
+  mediaType: 'audio' | 'image' | 'video' | 'document';
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+  includeExternal?: boolean;
+  albumName?: string;       // Filter by album (audio only)
+  artistName?: string;      // Filter by artist (audio only)
+})
+```
+
+### Get Music Albums
+
+```typescript
+getAlbums(): Promise<{
+  albums: Array<{
+    id: string;
+    name: string;
+    artist: string;
+    trackCount: number;
+    albumArtUri?: string;
+  }>;
+  totalCount: number;
+}>
+```
+
+### Save Media File
+
+```typescript
+saveMedia(options: {
+  data: string;             // Base64 data or file URI
+  fileName: string;         // Name for the file
+  mediaType: 'audio' | 'image' | 'video';
+  albumName?: string;       // Album to save in (optional)
+  relativePath?: string;    // Custom folder path (optional)
+}): Promise<{
+  success: boolean;
+  uri?: string;            // URI of saved file
+  error?: string;          // Error message if failed
+}>
+```
+
+### Get Media Metadata
+
+```typescript
+getMediaMetadata(options: {
+  filePath: string;        // URI of the media file
+}): Promise<{
+  media: MediaFile;        // File with complete metadata
+}>
+```
+
+### Check/Request Permissions
+
+```typescript
+// Check current permissions
+checkPermissions(): Promise<PermissionStatus>
+
+// Request permissions
+requestPermissions(options?: {
+  types?: ('audio' | 'images' | 'video')[];
+}): Promise<PermissionStatus>
+```
+
+## 📝 Media File Properties
+
+When you get media files, each file includes:
+
+```typescript
+interface MediaFile {
+  id: string;               // Unique ID
+  uri: string;              // File path
+  displayName: string;      // File name
+  size: number;             // File size in bytes
+  mimeType: string;         // File type (e.g., 'audio/mp3')
+  dateAdded: number;        // When added to device
+  mediaType: string;        // 'audio', 'image', 'video'
+  
+  // For music files
+  title?: string;           // Song title
+  artist?: string;          // Artist name
+  album?: string;           // Album name
+  albumArtist?: string;     // Album artist
+  composer?: string;        // Song composer
+  duration?: number;        // Length in milliseconds
+  genre?: string;           // Music genre
+  year?: number;            // Release year
+  track?: number;           // Track number
+  bitrate?: number;         // Audio bitrate (kbps)
+  sampleRate?: number;      // Sample rate (Hz)
+  channels?: number;        // Audio channels (1=mono, 2=stereo)
+  albumArtUri?: string;     // Album cover image URI
+  
+  // For images/videos
+  width?: number;           // Image/video width
+  height?: number;          // Image/video height
+  
+  // Storage info
+  isExternal?: boolean;     // true if on SD card
+}
+```
+
+## 🔧 Permission Types
+
+| Type | What It Accesses | Android Version |
+|------|------------------|-----------------|
+| `audio` | Music, podcasts, sound files | All versions |
+| `images` | Photos, pictures, images | All versions |
+| `video` | Videos, movies | All versions |
+| `document` | PDF, DOC, TXT, and other documents | All versions |
+
+## ❓ Common Questions
+
+### How do I access SD card files?
+
+Set `includeExternal: true` in your options:
+
+```typescript
+const result = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  includeExternal: true  // This includes SD card
+});
+```
+
+### Why am I not getting any files?
+
+1. Make sure you requested permissions first
+2. Check that permissions were granted
+3. Try running on a real device (not simulator)
+
+```typescript
+// Debug permissions
+const permissions = await CapacitorMediaStore.checkPermissions();
+console.log('Current permissions:', permissions);
+```
+
+### How do I filter music by artist or album?
+
+```typescript
+// Get songs by specific artist
+const artistSongs = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  artistName: 'Taylor Swift'
+});
+
+// Get songs from specific album
+const albumSongs = await CapacitorMediaStore.getMediasByType({
+  mediaType: 'audio',
+  albumName: 'Abbey Road'
+});
+```
+
+### How do I save a new media file?
+
+```typescript
+// Save an audio file
+const result = await CapacitorMediaStore.saveMedia({
+  data: 'base64-encoded-audio-data',
+  fileName: 'my-song.mp3',
+  mediaType: 'audio',
+  albumName: 'My Custom Album'
+});
+
+if (result.success) {
+  console.log('File saved at:', result.uri);
+}
+```
+
+### How do I get detailed metadata for a file?
+
+```typescript
+// Get complete metadata for a specific song
 const metadata = await CapacitorMediaStore.getMediaMetadata({
   filePath: 'content://media/external/audio/media/123'
 });
 
-// Get all music albums
-const albums = await CapacitorMediaStore.getAlbums();
-console.log('Albums found:', albums.albums);
-
-// Save a media file
-const saveResult = await CapacitorMediaStore.saveMedia({
-  data: 'base64-encoded-data-here',
-  fileName: 'my-song.mp3',
-  mediaType: 'audio',
-  albumName: 'My Album'
-});
+console.log('Song:', metadata.media.title);
+console.log('Bitrate:', metadata.media.bitrate);
+console.log('Sample Rate:', metadata.media.sampleRate);
 ```
 
-## API
+## 🤝 Platform Support
 
-### `getMedias(options?)`
+### 📱 Supported Devices
 
-Get all media files from device storage.
+| Platform | Support Level | Features | Notes |
+|----------|---------------|----------|-------|
+| **Android 6.0+** | ✅ **Full Support** | All media types, SD card, rich metadata | Production ready |
+| **iOS 12+** | 🚧 **Coming Soon** | Photos, videos, music library | Expected Q2 2025 |
+| **Web** | ⚠️ **Development Only** | Mock data for testing | Not for production |
 
-**Parameters:**
-- `options` (optional): MediaQueryOptions
+### 🏆 Android Compatibility
 
-```typescript
-interface MediaQueryOptions {
-  limit?: number;           // Limit number of results
-  offset?: number;          // Offset for pagination (default: 0)
-  sortOrder?: 'ASC' | 'DESC'; // Sort order (default: 'DESC')
-  sortBy?: 'DATE_ADDED' | 'DATE_MODIFIED' | 'DISPLAY_NAME' | 'SIZE' | 'TITLE';
-  albumName?: string;       // Filter by album name
-  artistName?: string;      // Filter by artist name
-  includeExternal?: boolean; // Include SD card files (default: true)
-}
-```
+- **Android 14+** (API 34+): Visual media permissions, latest features
+- **Android 13** (API 33): Granular media permissions 
+- **Android 10-12** (API 29-32): Scoped storage, external volumes
+- **Android 6-9** (API 23-28): Runtime permissions, full SD card access
+- **Android 5** (API 21-22): Basic support, limited external storage
 
-**Returns:** `Promise<MediaResponse>`
+### 📱 iOS Support Coming Soon!
 
-### `getMediasByType(options)`
+We're actively working on iOS support with full Photos framework integration. Expected features:
+- Access to Photos and Videos
+- Music library integration
+- Album and artist metadata
+- Expected release: **Q2 2025**
 
-Get media files filtered by type.
+## 💝 Support This Project
 
-**Parameters:**
-- `options`: MediaTypeOptions (extends MediaQueryOptions)
-  - `mediaType`: 'image' | 'audio' | 'video' | 'document' | 'all'
+Help me improve this plugin and build better tools for the community!
 
-**Returns:** `Promise<MediaResponse>`
+### 💳 Fiat Currency Support
+- **PayPal**: [paypal.me/odiondeveloper](https://paypal.me/odiondeveloper)
+- **Ko-fi**: [ko-fi.com/odiondeveloper](https://ko-fi.com/odiondeveloper)
+- **GitHub Sponsors**: [github.com/sponsors/odiondeveloper](https://github.com/sponsors/odiondeveloper)
+- **Buy Me a Coffee**: [buymeacoffee.com/odiondeveloper](https://buymeacoffee.com/odiondeveloper)
 
-### `getAlbums()`
+### ₿ Cryptocurrency Support
+- **Bitcoin (BTC)**: `bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh`
+- **Ethereum (ETH)**: `0x742d35Cc6634C0532925a3b8D09E66b0e17236c1`
+- **USDT (TRC20)**: `TLNGFxWKBpB5a6RPB1XLZi5xzWVx3e1XQ3`
+- **Binance Coin (BNB)**: `bnb136ns6lfw4zs5hg4n85vdthaad7hq5m4gtkgf23`
 
-Get all music albums from the device.
+### 💻 Why Support?
+Your contributions help me:
+- Upgrade to better development hardware
+- Improve my workspace and productivity  
+- Dedicate more time to open source projects
+- Add iOS support and new features faster
+- Provide better documentation and examples
 
-**Returns:** `Promise<AlbumResponse>`
+### 🤝 Other Ways to Help
+- ⭐ **Star the project** on GitHub
+- 🐛 **Report issues** and suggest features
+- 📖 **Improve documentation** 
+- 💬 **Share with other developers**
 
-### `saveMedia(options)`
+## 📄 License
 
-Save a media file to device storage.
+MIT License - feel free to use in your projects!
 
-**Parameters:**
-- `options`: SaveMediaOptions
+---
 
-```typescript
-interface SaveMediaOptions {
-  data: string;           // Base64 encoded data or file URI
-  fileName: string;       // File name
-  mediaType: 'image' | 'audio' | 'video' | 'document';
-  albumName?: string;     // Album name (optional)
-  relativePath?: string;  // Relative path within media directory
-}
-```
-
-**Returns:** `Promise<SaveMediaResponse>`
-
-### `getMediaMetadata(options)`
-
-Get detailed metadata for a specific media file.
-
-**Parameters:**
-- `options`: MediaMetadataOptions
-  - `filePath`: string (URI of the media file)
-
-**Returns:** `Promise<MediaMetadataResponse>`
-
-### `checkPermissions()`
-
-Check current permission status.
-
-**Returns:** `Promise<PermissionStatus>`
-
-### `requestPermissions()`
-
-Request necessary permissions for media access.
-
-**Returns:** `Promise<PermissionStatus>`
-
-## Data Types
-
-### MediaFile
-
-```typescript
-interface MediaFile {
-  id: string;
-  uri: string;
-  displayName: string;
-  size: number;
-  mimeType: string;
-  dateAdded: number;
-  dateModified: number;
-  mediaType: 'image' | 'audio' | 'video' | 'document';
-  
-  // For images/videos
-  width?: number;
-  height?: number;
-  
-  // For audio/video
-  duration?: number;
-  
-  // Rich audio metadata
-  title?: string;
-  artist?: string;
-  album?: string;
-  albumArtist?: string;
-  composer?: string;
-  genre?: string;
-  track?: number;
-  year?: number;
-  bitrate?: number;
-  sampleRate?: number;
-  channels?: number;
-  albumArtUri?: string;
-  
-  // Storage location
-  isExternal?: boolean; // true if file is on SD card
-}
-```
-
-## Why Use This Plugin?
-
-### Problem with Capacitor Filesystem
-
-The standard Capacitor Filesystem API has several limitations when working with media files:
-
-1. **No SD Card Access**: Cannot reliably access external storage/SD cards
-2. **Limited Metadata**: Only provides basic file information
-3. **No Media Organization**: Cannot access system media database
-4. **Performance Issues**: Scanning large directories is slow
-
-### MediaStore Advantages
-
-This plugin uses Android's MediaStore API which provides:
-
-1. **Full Storage Access**: Includes both internal storage and SD cards
-2. **Rich Metadata**: Complete audio metadata (artist, album, duration, bitrate, etc.)
-3. **System Integration**: Uses Android's built-in media database
-4. **Performance**: Fast queries with built-in indexing
-5. **Proper Permissions**: Handles Android 13+ granular media permissions
-
-## Example: Building a Music Player
-
-```typescript
-import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
-
-class MusicService {
-  async loadAllSongs() {
-    // Request permissions
-    await CapacitorMediaStore.requestPermissions();
-    
-    // Get all audio files including from SD card
-    const result = await CapacitorMediaStore.getMediasByType({
-      mediaType: 'audio',
-      sortBy: 'TITLE',
-      sortOrder: 'ASC',
-      includeExternal: true // Critical for SD card access
-    });
-    
-    return result.media.map(file => ({
-      id: file.id,
-      title: file.title || file.displayName,
-      artist: file.artist || 'Unknown Artist',
-      album: file.album || 'Unknown Album',
-      duration: file.duration || 0,
-      uri: file.uri,
-      isOnSDCard: file.isExternal
-    }));
-  }
-  
-  async getAlbums() {
-    const result = await CapacitorMediaStore.getAlbums();
-    return result.albums;
-  }
-  
-  async getDetailedMetadata(fileUri: string) {
-    return await CapacitorMediaStore.getMediaMetadata({
-      filePath: fileUri
-    });
-  }
-}
-```
-
-## Android Version Support
-
-This plugin supports a wide range of Android versions with adaptive permission handling:
-
-| Android Version | API Level | Support Status | Features |
-|----------------|-----------|----------------|----------|
-| **Android 15** | API 35 | ✅ Full Support | Latest MediaStore enhancements, optimal performance |
-| **Android 14** | API 34 | ✅ Full Support | Visual media permissions, partial media access |
-| **Android 13** | API 33 | ✅ Full Support | Granular media permissions (READ_MEDIA_*) |
-| **Android 12** | API 31-32 | ✅ Full Support | Scoped storage with READ_EXTERNAL_STORAGE |
-| **Android 11** | API 30 | ✅ Full Support | Scoped storage with READ_EXTERNAL_STORAGE |
-| **Android 10** | API 29 | ✅ Full Support | Scoped storage introduction, multi-volume support |
-| **Android 9** | API 28 | ✅ Full Support | Traditional storage with runtime permissions |
-| **Android 8** | API 26-27 | ✅ Full Support | Traditional storage with runtime permissions |
-| **Android 7** | API 24-25 | ✅ Full Support | Traditional storage with runtime permissions |
-| **Android 6** | API 23 | ✅ Full Support | Runtime permissions introduced |
-| **Android 5** | API 21-22 | ✅ Basic Support | Install-time permissions, limited SD card access |
-
-### SD Card Access by Version
-
-- **Android 5-9**: Full external storage access with proper permissions
-- **Android 10+**: Scoped storage with MediaStore API, multi-volume support
-- **Android 13+**: Granular media permissions for enhanced privacy
-- **Android 14+**: Visual media permissions with user-selected access
-
-## Capacitor Version Support
-
-| Capacitor Version | Support Status | Notes |
-|-------------------|----------------|-------|
-| **Capacitor 7.x** | ✅ Recommended | Latest features, best performance, full compatibility |
-| **Capacitor 6.x** | ✅ Fully Supported | Excellent compatibility |
-| **Capacitor 5.x** | ✅ Supported | Fully compatible |
-| **Capacitor 4.x** | ✅ Supported | Compatible with minor API differences |
-| **Capacitor 3.x** | ⚠️ Limited | Basic functionality, upgrade recommended |
-
-## JavaScript Compatibility
-
-This plugin works with:
-- ✅ **TypeScript** - Full type definitions included
-- ✅ **JavaScript (ES6+)** - Modern JavaScript with import/export
-- ✅ **CommonJS** - Node.js style require()
-- ✅ **Vanilla JavaScript** - No framework required
-- ✅ **React/Vue/Angular** - All major frameworks supported
-
-### JavaScript Usage Example
-
-```javascript
-// ES6 Import
-import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
-
-// CommonJS Require
-const { CapacitorMediaStore } = require('@odion-cloud/capacitor-mediastore');
-
-// Get all songs including SD card
-const songs = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'audio',
-  includeExternal: true // Enables SD card access
-});
-
-console.log(`Found ${songs.totalCount} songs`);
-songs.media.forEach(song => {
-  console.log(`${song.title} - ${song.artist} ${song.isExternal ? '(SD)' : ''}`);
-});
-```
-
-## Platform Support
-
-- ✅ **Android**: Full implementation using MediaStore API (API 21+)
-- ❌ **iOS**: Not supported (iOS uses different media access patterns)
-- ❌ **Web**: Not supported (browser security restrictions)
-
-## Migration from Capacitor Filesystem
-
-If you're currently using Capacitor Filesystem for media access, here's why you should migrate:
-
-### Filesystem Limitations
-```javascript
-// ❌ Capacitor Filesystem - Limited access
-import { Filesystem } from '@capacitor/filesystem';
-
-// Cannot access SD card reliably
-// No metadata (artist, album, duration)
-// Slow directory scanning
-// No album organization
-const files = await Filesystem.readdir({
-  path: 'Music',
-  directory: Directory.ExternalStorage
-});
-```
-
-### MediaStore Advantages
-```javascript
-// ✅ MediaStore Plugin - Full access
-import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
-
-// Accesses both internal and SD card storage
-// Rich metadata included
-// Fast indexed queries
-// Album organization
-const songs = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'audio',
-  includeExternal: true,
-  sortBy: 'TITLE'
-});
-```
-
-## Installation Requirements
-
-### Minimum Requirements
-- **Android**: API 21 (Android 5.0) or higher
-- **Capacitor**: 3.0 or higher (6.0 recommended)
-- **Node.js**: 14.0 or higher
-- **NPM**: 6.0 or higher
-
-### Recommended Setup
-- **Android**: API 29+ for best SD card compatibility
-- **Capacitor**: 6.0 for latest features
-- **Target SDK**: 34 (Android 14)
-
-## License
-
-MIT
+**Need help?** Check the examples above or create an issue on GitHub.
