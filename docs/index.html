@@ -109,8 +109,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .code-block {
@@ -246,7 +253,8 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        th, td {
+        th,
+        td {
             padding: 0.75rem;
             text-align: left;
             border-bottom: 1px solid #e5e7eb;
@@ -309,20 +317,20 @@
     <div class="container">
         <header>
             <h1>📱 Capacitor MediaStore Plugin</h1>
-            <p class="subtitle">Simple and powerful media access for your Android apps</p>
-            
+            <p class="subtitle">Media access, file watching & native media session for Android & iOS</p>
+
             <!-- Quick Links -->
             <div style="margin: 1.5rem 0; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank" 
-                   style="background: #333; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank"
+                    style="background: #333; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
                     <span>⭐</span> GitHub
                 </a>
                 <a href="https://www.npmjs.com/package/@odion-cloud/capacitor-mediastore" target="_blank"
-                   style="background: #cb3837; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    style="background: #cb3837; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
                     <span>📦</span> npm
                 </a>
             </div>
-            
+
             <a href="#installation" class="quick-start" onclick="showTab('setup')">Get Started Now →</a>
         </header>
 
@@ -331,6 +339,8 @@
             <button class="tab" onclick="showTab('overview')">Overview</button>
             <button class="tab" onclick="showTab('setup')">Setup</button>
             <button class="tab" onclick="showTab('usage')">Usage</button>
+            <button class="tab" onclick="showTab('filewatcher')">File Watcher</button>
+            <button class="tab" onclick="showTab('mediasession')">Media Session</button>
             <button class="tab" onclick="showTab('examples')">Examples</button>
             <button class="tab" onclick="showTab('api')">API</button>
         </div>
@@ -380,7 +390,8 @@
             </div>
 
             <div class="alert alert-success">
-                <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration.
+                <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos
+                framework integration.
             </div>
 
             <h3>🏆 Android Version Compatibility</h3>
@@ -436,10 +447,12 @@
                     <h4>GitHub Sponsors</h4>
                     <p>Support through GitHub's official sponsorship program:</p>
                     <ul>
-                        <li><strong>GitHub Sponsors:</strong><br><a href="https://github.com/sponsors/odion-cloud" target="_blank">github.com/sponsors/odion-cloud</a></li>
+                        <li><strong>GitHub Sponsors:</strong><br><a href="https://github.com/sponsors/odion-cloud"
+                                target="_blank">github.com/sponsors/odion-cloud</a></li>
                     </ul>
                     <div class="alert alert-info" style="margin-top: 1rem;">
-                        <strong>💡 Recommended:</strong> GitHub Sponsors offers the most transparent and developer-friendly way to support open source projects.
+                        <strong>💡 Recommended:</strong> GitHub Sponsors offers the most transparent and
+                        developer-friendly way to support open source projects.
                     </div>
                 </div>
                 <div class="feature-card">
@@ -447,12 +460,18 @@
                     <h4>Cryptocurrency Support</h4>
                     <p>Support via crypto donations across multiple networks:</p>
                     <ul>
-                        <li><strong>Bitcoin (BTC):</strong><br><code style="font-size: 0.8rem;">bc1q2k0ftm2fgst22kzj683e8gpau3spfa23ttkg26</code></li>
-                        <li><strong>USDT (Ethereum):</strong><br><code style="font-size: 0.8rem;">0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1</code></li>
-                        <li><strong>USDT (BNB Chain):</strong><br><code style="font-size: 0.8rem;">0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1</code></li>
-                        <li><strong>USDT (TRON/TRC20):</strong><br><code style="font-size: 0.8rem;">TXVy781mQ2tCuQ1BrattXWueUHp1wB5fwt</code></li>
-                        <li><strong>USDT (Solana):</strong><br><code style="font-size: 0.8rem;">GZ8jmSUUzc4dQF7Cthj2atomvpBZWqccR81N9DL4o1Be</code></li>
-                        <li><strong>USDT (TON):</strong><br><code style="font-size: 0.8rem;">UQAthXSNIlauj3SrzpDAU4VYxgEVV3niOSmeTPCtMBKGfEAE</code></li>
+                        <li><strong>Bitcoin (BTC):</strong><br><code
+                                style="font-size: 0.8rem;">bc1q2k0ftm2fgst22kzj683e8gpau3spfa23ttkg26</code></li>
+                        <li><strong>USDT (Ethereum):</strong><br><code
+                                style="font-size: 0.8rem;">0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1</code></li>
+                        <li><strong>USDT (BNB Chain):</strong><br><code
+                                style="font-size: 0.8rem;">0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1</code></li>
+                        <li><strong>USDT (TRON/TRC20):</strong><br><code
+                                style="font-size: 0.8rem;">TXVy781mQ2tCuQ1BrattXWueUHp1wB5fwt</code></li>
+                        <li><strong>USDT (Solana):</strong><br><code
+                                style="font-size: 0.8rem;">GZ8jmSUUzc4dQF7Cthj2atomvpBZWqccR81N9DL4o1Be</code></li>
+                        <li><strong>USDT (TON):</strong><br><code
+                                style="font-size: 0.8rem;">UQAthXSNIlauj3SrzpDAU4VYxgEVV3niOSmeTPCtMBKGfEAE</code></li>
                     </ul>
                 </div>
             </div>
@@ -472,7 +491,8 @@
             <div class="feature-grid">
                 <div class="feature-card">
                     <h4>⭐ Star the Project</h4>
-                    <p>Give us a star on <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank">GitHub</a> to show your support!</p>
+                    <p>Give us a star on <a href="https://github.com/odion-cloud/capacitor-mediastore"
+                            target="_blank">GitHub</a> to show your support!</p>
                 </div>
                 <div class="feature-card">
                     <h4>🐛 Report Issues</h4>
@@ -492,20 +512,24 @@
         <!-- Overview Tab -->
         <div id="overview" class="tab-content">
             <h2>What This Plugin Does</h2>
-            <p>Get access to all media files on Android devices - including music, photos, videos, and files stored on SD cards. Perfect for building music players, photo galleries, and file managers.</p>
+            <p>Get access to all media files on Android devices - including music, photos, videos, and files stored on
+                SD cards. Perfect for building music players, photo galleries, and file managers.</p>
 
             <!-- Quick Links -->
             <div class="alert alert-info" style="margin: 1.5rem 0;">
                 <strong>📚 Quick Links:</strong>
                 <div style="display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                    <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank" style="color: #1e40af; text-decoration: none; font-weight: 600;">
+                    <a href="https://github.com/odion-cloud/capacitor-mediastore" target="_blank"
+                        style="color: #1e40af; text-decoration: none; font-weight: 600;">
                         ⭐ View on GitHub
                     </a>
-                    <a href="https://www.npmjs.com/package/@odion-cloud/capacitor-mediastore" target="_blank" style="color: #1e40af; text-decoration: none; font-weight: 600;">
+                    <a href="https://www.npmjs.com/package/@odion-cloud/capacitor-mediastore" target="_blank"
+                        style="color: #1e40af; text-decoration: none; font-weight: 600;">
                         📦 npm Package
                     </a>
                     <span style="color: #6b7280;">•</span>
-                    <code style="background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9rem;">npm install @odion-cloud/capacitor-mediastore</code>
+                    <code
+                        style="background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9rem;">npm install @odion-cloud/capacitor-mediastore</code>
                 </div>
             </div>
 
@@ -530,15 +554,28 @@
                     <h4>Fast & Reliable</h4>
                     <p>Uses Android's native MediaStore API for fast, indexed access to media files.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👁️</div>
+                    <h4>File Change Watcher</h4>
+                    <p>Real-time detection of file additions, deletions, and modifications via native observers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h4>Native Media Session</h4>
+                    <p>Full playback notification with custom buttons (like, shuffle, repeat), progress bar, and app
+                        logo.</p>
+                </div>
             </div>
 
-                         <div class="alert alert-success">
-                 <strong>Works with all Android versions!</strong> From Android 6.0 to the latest versions, with automatic permission handling.
-             </div>
+            <div class="alert alert-success">
+                <strong>Works with all Android versions!</strong> From Android 6.0 to the latest versions, with
+                automatic permission handling.
+            </div>
 
-             <div class="alert alert-info">
-                 <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos framework integration.
-             </div>
+            <div class="alert alert-info">
+                <strong>📱 iOS Support Coming Soon!</strong> We're actively working on iOS support with full Photos
+                framework integration.
+            </div>
 
             <h3>Quick Example</h3>
             <div class="code-block">
@@ -553,6 +590,290 @@ console.log(`Found ${music.totalCount} songs!`);
 music.media.forEach(song => {
   console.log(`${song.title} by ${song.artist}`);
 });</pre>
+            </div>
+        </div>
+
+        <!-- File Watcher Tab -->
+        <div id="filewatcher" class="tab-content">
+            <h2>👁️ File Change Watcher</h2>
+            <p>Detect when files are added, deleted, or modified on the device in real-time. Uses Android
+                <code>ContentObserver</code> and iOS <code>PHPhotoLibraryChangeObserver</code>.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">➕</div>
+                    <h4>Added</h4>
+                    <p>Detects when new files are downloaded, saved, or transferred to the device.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🗑️</div>
+                    <h4>Deleted</h4>
+                    <p>Detects when files are removed from the device or SD card.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✏️</div>
+                    <h4>Modified</h4>
+                    <p>Detects when file metadata or content is changed (e.g., edited tags).</p>
+                </div>
+            </div>
+
+            <h3>Start Watching</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
+
+// Listen for file changes
+CapacitorMediaStore.addListener('mediaChanged', (event) => {
+  console.log(`File ${event.type}:`, event.file);
+  // event.type: 'added' | 'deleted' | 'modified'
+  // event.file: { id, displayName, uri, mimeType, mediaType, ... }
+});
+
+// Start watching all media types
+await CapacitorMediaStore.startWatching();
+
+// Or watch specific types only
+await CapacitorMediaStore.startWatching({
+  mediaTypes: ['audio', 'image']
+});</pre>
+            </div>
+
+            <h3>Stop Watching</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>await CapacitorMediaStore.stopWatching();</pre>
+            </div>
+
+            <h3>Example: Auto-refresh Music Library</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>async function setupAutoRefresh() {
+  CapacitorMediaStore.addListener('mediaChanged', (event) => {
+    if (event.file.mediaType === 'audio') {
+      if (event.type === 'added') {
+        console.log('New song downloaded:', event.file.displayName);
+        refreshMusicLibrary();
+      } else if (event.type === 'deleted') {
+        console.log('Song removed:', event.file.displayName);
+        removeFromLibrary(event.file.id);
+      }
+    }
+  });
+  
+  await CapacitorMediaStore.startWatching({ mediaTypes: ['audio'] });
+}</pre>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>📱 Platform:</strong> Uses <code>ContentObserver</code> on Android (API 1+) and
+                <code>PHPhotoLibraryChangeObserver</code> on iOS (iOS 8+). Works across all supported versions.
+            </div>
+        </div>
+
+        <!-- Media Session Tab -->
+        <div id="mediasession" class="tab-content">
+            <h2>🎵 Native Media Session</h2>
+            <p>Create persistent media playback notifications with lock screen & notification controls — just like
+                Spotify, Apple Music, or YouTube Music.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎛️</div>
+                    <h4>Transport Controls</h4>
+                    <p>Previous, Play/Pause, Next always visible in compact notification view.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">❤️</div>
+                    <h4>Custom Buttons</h4>
+                    <p>Add Like, Shuffle, Repeat buttons with <code>position: 'left'</code> or <code>'right'</code>.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🖼️</div>
+                    <h4>Artwork & Branding</h4>
+                    <p>Album art + your app logo. Background auto-tints with artwork color.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h4>Progress Bar</h4>
+                    <p>Native seek bar showing playback position and duration.</p>
+                </div>
+            </div>
+
+            <h3>🎨 Icon Setup (Android)</h3>
+            <p>Place icon drawables in <code>android/app/src/main/res/drawable/</code>.</p>
+            <p><strong>Format:</strong> Vector XML (24×24dp) or PNG (48×48px mdpi / 96×96px xhdpi). Use monochrome
+                white-on-transparent for the notification icon.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>ic_notification.xml</code></td>
+                        <td>Small notification icon (your app logo)</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_play.xml</code></td>
+                        <td>Play button</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_pause.xml</code></td>
+                        <td>Pause button</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_skip_previous.xml</code></td>
+                        <td>Previous track</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_skip_next.xml</code></td>
+                        <td>Next track</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_shuffle.xml</code></td>
+                        <td>Shuffle off</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_shuffle_on.xml</code></td>
+                        <td>Shuffle on</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_favorite_border.xml</code></td>
+                        <td>Not liked (outline heart)</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_favorite.xml</code></td>
+                        <td>Liked (filled heart)</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_repeat.xml</code></td>
+                        <td>Repeat off/normal</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_repeat_one.xml</code></td>
+                        <td>Repeat one</td>
+                    </tr>
+                    <tr>
+                        <td><code>ic_repeat_all.xml</code></td>
+                        <td>Repeat all (optional)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="alert alert-info">
+                <strong>Tip:</strong> In Android Studio: Right-click <code>res/drawable</code> → New → Vector Asset →
+                search Material Icons. The plugin tries to resolve icon names as: exact name →
+                <code>ic_&lt;name&gt;</code> → <code>ms_&lt;name&gt;</code>.
+            </div>
+
+            <h3>Create a Media Session</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>await CapacitorMediaStore.setMediaSession({
+  title: 'Bohemian Rhapsody',
+  artist: 'Queen',
+  album: 'A Night at the Opera',
+  artworkUrl: 'https://example.com/album-art.jpg',
+  duration: 354,  // seconds
+  smallIconName: 'ic_notification',  // 24dp monochrome white-on-transparent
+  buttons: [
+    // position: 'left' = displayed BEFORE the Previous button
+    { action: 'shuffle', displayName: 'Shuffle', iconName: 'ic_shuffle',
+      enabled: true, position: 'left' },
+    // position: 'right' = displayed AFTER the Next button (default)
+    { action: 'like', displayName: 'Like', iconName: 'ic_favorite_border',
+      enabled: true, position: 'right' },
+    { action: 'repeat', displayName: 'Repeat', iconName: 'ic_repeat',
+      enabled: true, position: 'right' }
+  ]
+});
+
+await CapacitorMediaStore.updatePlaybackState({ state: 'playing' });</pre>
+            </div>
+
+            <div class="alert alert-success">
+                <strong>🎨 Colorized Background:</strong> The notification background automatically tints with the
+                dominant color from the album artwork (like YouTube Music / Spotify on Android 13+).
+            </div>
+
+            <h3>Handle Button Events</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>CapacitorMediaStore.addListener('mediaSessionAction', (event) => {
+  switch (event.action) {
+    case 'play': player.play(); break;
+    case 'pause': player.pause(); break;
+    case 'nexttrack': player.next(); break;
+    case 'previoustrack': player.previous(); break;
+    case 'like': toggleLike(); break;
+    case 'shuffle': toggleShuffle(); break;
+    case 'repeat': toggleRepeat(); break;
+    case 'seekto': player.seekTo(event.extras.seekTime); break;
+  }
+});</pre>
+            </div>
+
+            <h3>Update Progress Bar</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Update position every second
+setInterval(async () => {
+  await CapacitorMediaStore.updatePositionState({
+    position: player.getCurrentTime(),
+    duration: player.getDuration(),
+    playbackRate: 1.0
+  });
+}, 1000);</pre>
+            </div>
+
+            <h3>Dynamically Update Buttons</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Toggle like icon (outline → filled)
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [
+    { action: 'like', displayName: 'Unlike', iconName: 'ic_favorite',
+      enabled: true, position: 'right' }
+  ]
+});
+
+// Cycle repeat modes
+// Mode 1: Repeat Off
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [{ action: 'repeat', displayName: 'Repeat Off',
+    iconName: 'ic_repeat', position: 'right' }]
+});
+// Mode 2: Repeat All
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [{ action: 'repeat', displayName: 'Repeat All',
+    iconName: 'ic_repeat_all', position: 'right' }]
+});
+// Mode 3: Repeat One
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [{ action: 'repeat', displayName: 'Repeat One',
+    iconName: 'ic_repeat_one', position: 'right' }]
+});</pre>
+            </div>
+
+            <h3>Destroy Session</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>await CapacitorMediaStore.destroyMediaSession();</pre>
+            </div>
+
+            <div class="alert alert-warning">
+                <strong>Android Icons:</strong> All <code>iconName</code> values must match a file in
+                <code>android/app/src/main/res/drawable/</code>. Without them, the plugin falls back to a generic Play
+                icon and logs a warning to help you debug.
+            </div>
+
+            <div class="alert alert-info">
+                <strong>iOS:</strong> Uses <code>MPNowPlayingInfoCenter</code> + <code>MPRemoteCommandCenter</code> (iOS
+                7.1+). Lock screen controls work out of the box. Enable Background Audio in Xcode.
             </div>
         </div>
 
@@ -596,7 +917,8 @@ npx cap sync</pre>
             </div>
 
             <div class="alert alert-info">
-                <strong>That's it!</strong> The plugin will automatically handle permission requests when you use it. No additional setup needed.
+                <strong>That's it!</strong> The plugin will automatically handle permission requests when you use it. No
+                additional setup needed.
             </div>
         </div>
 
@@ -623,7 +945,7 @@ const audioPermission = await CapacitorMediaStore.requestPermissions({
             </div>
 
             <h3>3. Get Media Files</h3>
-            
+
             <h4>Get All Media</h4>
             <div class="code-block">
                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -677,7 +999,8 @@ music.media.forEach(song => {
             </div>
 
             <div class="alert alert-warning">
-                <strong>Remember:</strong> Always check permissions before accessing media files. The plugin will show permission dialogs automatically when needed.
+                <strong>Remember:</strong> Always check permissions before accessing media files. The plugin will show
+                permission dialogs automatically when needed.
             </div>
         </div>
 
@@ -770,10 +1093,10 @@ const beatlesSongs = await findSongsByArtist('The Beatles');
 const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
             </div>
 
-                         <h3>💿 Get Music Albums</h3>
-             <div class="code-block">
-                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                 <pre>async function getMusicAlbums() {
+            <h3>💿 Get Music Albums</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>async function getMusicAlbums() {
    await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
    
    const albums = await CapacitorMediaStore.getAlbums();
@@ -785,12 +1108,12 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
    
    return albums.albums;
  }</pre>
-             </div>
+            </div>
 
-             <h3>💾 Save Media File</h3>
-             <div class="code-block">
-                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                 <pre>async function saveAudioFile(audioData, fileName) {
+            <h3>💾 Save Media File</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>async function saveAudioFile(audioData, fileName) {
    await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
    
    const result = await CapacitorMediaStore.saveMedia({
@@ -808,12 +1131,12 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
      console.error('Save failed:', result.error);
    }
  }</pre>
-             </div>
+            </div>
 
-             <h3>🔍 Get Detailed Metadata</h3>
-             <div class="code-block">
-                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                 <pre>async function getDetailedSongInfo(fileUri) {
+            <h3>🔍 Get Detailed Metadata</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>async function getDetailedSongInfo(fileUri) {
    const metadata = await CapacitorMediaStore.getMediaMetadata({
      filePath: fileUri
    });
@@ -833,7 +1156,7 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
    
    return song;
  }</pre>
-             </div>
+            </div>
         </div>
 
         <!-- API Tab -->
@@ -898,43 +1221,43 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
                 </div>
             </div>
 
-                         <div class="method-card">
-                 <div class="method-name">saveMedia(options)</div>
-                 <p>Save a media file to device storage with proper metadata.</p>
-                 <div class="code-block">
-                     <pre>saveMedia({
+            <div class="method-card">
+                <div class="method-name">saveMedia(options)</div>
+                <p>Save a media file to device storage with proper metadata.</p>
+                <div class="code-block">
+                    <pre>saveMedia({
    data: string;             // Base64 data or file URI
    fileName: string;         // Name for the file
    mediaType: 'audio' | 'image' | 'video';
    albumName?: string;       // Album to save in (optional)
    relativePath?: string;    // Custom folder path (optional)
  })</pre>
-                 </div>
-             </div>
+                </div>
+            </div>
 
-             <div class="method-card">
-                 <div class="method-name">getMediaMetadata(options)</div>
-                 <p>Get detailed metadata for a specific media file including audio tags.</p>
-                 <div class="code-block">
-                     <pre>getMediaMetadata({
+            <div class="method-card">
+                <div class="method-name">getMediaMetadata(options)</div>
+                <p>Get detailed metadata for a specific media file including audio tags.</p>
+                <div class="code-block">
+                    <pre>getMediaMetadata({
    filePath: string;         // URI of the media file
  }): Promise&lt;{
    media: MediaFile;         // File with complete metadata
  }&gt;</pre>
-                 </div>
-             </div>
+                </div>
+            </div>
 
-             <div class="method-card">
-                 <div class="method-name">checkPermissions()</div>
-                 <p>Check current permission status without requesting.</p>
-                 <div class="code-block">
-                     <pre>checkPermissions(): Promise&lt;PermissionStatus&gt;</pre>
-                 </div>
-             </div>
+            <div class="method-card">
+                <div class="method-name">checkPermissions()</div>
+                <p>Check current permission status without requesting.</p>
+                <div class="code-block">
+                    <pre>checkPermissions(): Promise&lt;PermissionStatus&gt;</pre>
+                </div>
+            </div>
 
             <h3>Media File Properties</h3>
             <p>Every media file returned includes these properties:</p>
-            
+
             <table>
                 <thead>
                     <tr>
@@ -987,32 +1310,32 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
                 </tbody>
             </table>
 
-                         <h4>Music Files Also Include:</h4>
-             <div class="feature-grid">
-                 <div class="feature-card">
-                     <h4>Basic Info</h4>
-                     <ul>
-                         <li><code>title</code> - Song title</li>
-                         <li><code>artist</code> - Artist name</li>
-                         <li><code>album</code> - Album name</li>
-                         <li><code>duration</code> - Length in milliseconds</li>
-                         <li><code>albumArtist</code> - Album artist</li>
-                         <li><code>composer</code> - Song composer</li>
-                     </ul>
-                 </div>
-                 <div class="feature-card">
-                     <h4>Extended Info</h4>
-                     <ul>
-                         <li><code>genre</code> - Music genre</li>
-                         <li><code>year</code> - Release year</li>
-                         <li><code>track</code> - Track number</li>
-                         <li><code>albumArtUri</code> - Album cover image</li>
-                         <li><code>bitrate</code> - Audio bitrate</li>
-                         <li><code>sampleRate</code> - Sample rate</li>
-                         <li><code>channels</code> - Audio channels (mono/stereo)</li>
-                     </ul>
-                 </div>
-             </div>
+            <h4>Music Files Also Include:</h4>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Basic Info</h4>
+                    <ul>
+                        <li><code>title</code> - Song title</li>
+                        <li><code>artist</code> - Artist name</li>
+                        <li><code>album</code> - Album name</li>
+                        <li><code>duration</code> - Length in milliseconds</li>
+                        <li><code>albumArtist</code> - Album artist</li>
+                        <li><code>composer</code> - Song composer</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Extended Info</h4>
+                    <ul>
+                        <li><code>genre</code> - Music genre</li>
+                        <li><code>year</code> - Release year</li>
+                        <li><code>track</code> - Track number</li>
+                        <li><code>albumArtUri</code> - Album cover image</li>
+                        <li><code>bitrate</code> - Audio bitrate</li>
+                        <li><code>sampleRate</code> - Sample rate</li>
+                        <li><code>channels</code> - Audio channels (mono/stereo)</li>
+                    </ul>
+                </div>
+            </div>
 
             <h4>Images & Videos Also Include:</h4>
             <ul>
@@ -1022,7 +1345,8 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
             </ul>
 
             <div class="alert alert-info">
-                <strong>Tip:</strong> Use <code>includeExternal: true</code> to access files stored on SD cards and external storage devices.
+                <strong>Tip:</strong> Use <code>includeExternal: true</code> to access files stored on SD cards and
+                external storage devices.
             </div>
         </div>
 
@@ -1051,11 +1375,11 @@ const taylorSwiftSongs = await findSongsByArtist('Taylor Swift');</pre>
         function copyCode(button) {
             const codeBlock = button.nextElementSibling;
             const code = codeBlock.textContent;
-            
+
             navigator.clipboard.writeText(code).then(() => {
                 button.textContent = 'Copied!';
                 button.style.background = '#10b981';
-                
+
                 setTimeout(() => {
                     button.textContent = 'Copy';
                     button.style.background = '#374151';

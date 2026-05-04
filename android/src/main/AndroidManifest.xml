@@ -17,6 +17,16 @@
     <!-- Optional: Access to external storage volumes -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" 
                      android:minSdkVersion="30" />
+
+    <!-- Media Session: Foreground service permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    
+    <!-- Notification permission for Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Internet for loading artwork from URL -->
+    <uses-permission android:name="android.permission.INTERNET" />
                      
     <!-- Query for media apps (Android 11+) -->
     <queries>
@@ -36,6 +46,14 @@
 
     <application>
         <!-- Plugin registration will be handled by Capacitor -->
+
+        <!-- Media Session Foreground Service -->
+        <service
+            android:name="com.capacitor.mediastore.MediaSessionService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback">
+        </service>
     </application>
 
 </manifest>

@@ -10,6 +10,14 @@ import Photos
 public class CapacitorMediaStorePlugin: CAPPlugin {
     private let implementation = CapacitorMediaStore()
 
+    public override func load() {
+        implementation.plugin = self
+    }
+
+    // ──────────────────────────────────────────────
+    // Existing Media Store methods
+    // ──────────────────────────────────────────────
+
     @objc func getMedias(_ call: CAPPluginCall) {
         implementation.getMedias(call)
     }
@@ -36,5 +44,41 @@ public class CapacitorMediaStorePlugin: CAPPlugin {
 
     @objc func requestPermissions(_ call: CAPPluginCall) {
         implementation.requestPermissions(call)
+    }
+
+    // ──────────────────────────────────────────────
+    // File Change Watcher
+    // ──────────────────────────────────────────────
+
+    @objc func startWatching(_ call: CAPPluginCall) {
+        implementation.startWatching(call)
+    }
+
+    @objc func stopWatching(_ call: CAPPluginCall) {
+        implementation.stopWatching(call)
+    }
+
+    // ──────────────────────────────────────────────
+    // Native Media Session
+    // ──────────────────────────────────────────────
+
+    @objc func setMediaSession(_ call: CAPPluginCall) {
+        implementation.setMediaSession(call)
+    }
+
+    @objc func updatePlaybackState(_ call: CAPPluginCall) {
+        implementation.updatePlaybackState(call)
+    }
+
+    @objc func updatePositionState(_ call: CAPPluginCall) {
+        implementation.updatePositionState(call)
+    }
+
+    @objc func updateMediaSessionButtons(_ call: CAPPluginCall) {
+        implementation.updateMediaSessionButtons(call)
+    }
+
+    @objc func destroyMediaSession(_ call: CAPPluginCall) {
+        implementation.destroyMediaSession(call)
     }
 }

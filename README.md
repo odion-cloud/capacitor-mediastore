@@ -1,6 +1,6 @@
 # Capacitor MediaStore Plugin
 
-A simple and powerful Capacitor plugin that lets you access media files (music, photos, videos) on Android devices, including SD card storage.
+A powerful Capacitor plugin for accessing device media files (music, photos, videos), real-time file change detection, and native media session notifications on Android & iOS.
 
 ## 🚀 Quick Start
 
@@ -16,7 +16,11 @@ npx cap sync
 - ✅ Read files from both internal storage and SD card
 - ✅ Get music albums and playlists
 - ✅ Save new media files to device
-- ✅ Works on all Android versions (6.0+)
+- ✅ **Real-time file change detection** (added, deleted, modified)
+- ✅ **Native media session notifications** with custom buttons (like, shuffle, repeat)
+- ✅ **Custom app logo** in media notifications
+- ✅ **Lock screen controls** with progress bar
+- ✅ Works on all Android versions (5.0+) and iOS (12+)
 
 ## 🛠️ Setup
 
@@ -26,16 +30,19 @@ Add these permissions to `android/app/src/main/AndroidManifest.xml`:
 
 ```xml
 <!-- For Android 6-12 -->
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
                  android:maxSdkVersion="32" />
 
 <!-- For Android 13+ -->
 <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+<!-- For Media Session notifications (Android 13+) -->
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 ```
 
-### iOS Setup (Optional)
+### iOS Setup
 
 Add to `ios/App/App/Info.plist`:
 
@@ -44,12 +51,14 @@ Add to `ios/App/App/Info.plist`:
 <string>This app needs access to your photos and media</string>
 ```
 
+For media session background audio, enable **Audio, AirPlay, and Picture in Picture** in your Xcode project's Background Modes.
+
 ## 📖 Basic Usage
 
 ### 1. Import the Plugin
 
 ```typescript
-import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
+import { CapacitorMediaStore } from "@odion-cloud/capacitor-mediastore";
 ```
 
 ### 2. Request Permissions
@@ -59,8 +68,8 @@ import { CapacitorMediaStore } from '@odion-cloud/capacitor-mediastore';
 const permissions = await CapacitorMediaStore.requestPermissions();
 
 // Or request specific types
-const audioOnly = await CapacitorMediaStore.requestPermissions({ 
-  types: ['audio'] 
+const audioOnly = await CapacitorMediaStore.requestPermissions({
+  types: ["audio"],
 });
 ```
 
@@ -70,7 +79,7 @@ const audioOnly = await CapacitorMediaStore.requestPermissions({
 // Get all media files (photos, music, videos)
 const allMedia = await CapacitorMediaStore.getMedias({
   limit: 50,
-  includeExternal: true // Include SD card files
+  includeExternal: true, // Include SD card files
 });
 
 console.log(`Found ${allMedia.totalCount} files`);
@@ -81,304 +90,381 @@ console.log(`Found ${allMedia.totalCount} files`);
 ```typescript
 // Get all music files
 const music = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'audio',
-  sortBy: 'TITLE',
-  includeExternal: true
+  mediaType: "audio",
+  sortBy: "TITLE",
+  includeExternal: true,
 });
 
 // Get all photos
 const photos = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'image',
-  limit: 100
+  mediaType: "image",
+  limit: 100,
 });
 
 // Get all videos
 const videos = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'video'
+  mediaType: "video",
 });
 
 // Get documents (PDF, DOC, TXT, etc.)
 const documents = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'document'
+  mediaType: "document",
 });
 ```
+
+---
+
+## 👁️ File Change Watcher
+
+Detect when files are added, deleted, or modified on the device in real-time.
+
+### Start Watching
+
+```typescript
+// Listen for file changes
+CapacitorMediaStore.addListener("mediaChanged", (event) => {
+  console.log(`File ${event.type}:`, event.file);
+  // event.type: 'added' | 'deleted' | 'modified'
+  // event.file: { id, displayName, uri, mimeType, mediaType, ... }
+});
+
+// Start watching all media types
+await CapacitorMediaStore.startWatching();
+
+// Or watch specific types only
+await CapacitorMediaStore.startWatching({
+  mediaTypes: ["audio", "image"],
+});
+```
+
+### Stop Watching
+
+```typescript
+await CapacitorMediaStore.stopWatching();
+```
+
+### Example: Auto-refresh Music Library
+
+```typescript
+async function setupAutoRefresh() {
+  CapacitorMediaStore.addListener("mediaChanged", (event) => {
+    if (event.file.mediaType === "audio") {
+      if (event.type === "added") {
+        console.log("New song downloaded:", event.file.displayName);
+        refreshMusicLibrary();
+      } else if (event.type === "deleted") {
+        console.log("Song removed:", event.file.displayName);
+        removeFromLibrary(event.file.id);
+      }
+    }
+  });
+
+  await CapacitorMediaStore.startWatching({ mediaTypes: ["audio"] });
+}
+```
+
+---
+
+## 🎵 Native Media Session
+
+Create native media playback notifications with lock screen controls, just like Spotify or Apple Music.
+
+### 🎨 Icon Setup (Android)
+
+Before using media session buttons, you need to add icon drawables to your Android project:
+
+1. **Location:** `android/app/src/main/res/drawable/`
+2. **Format:** Vector XML (24×24dp) or PNG (48×48px mdpi / 96×96px xhdpi)
+3. **Naming:** Lowercase with underscores, prefixed with `ic_`
+
+**Required icon files:**
+
+| File                     | Purpose                                                                  |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `ic_notification.xml`    | Small notification icon (your app logo, monochrome white-on-transparent) |
+| `ic_play.xml`            | Play button                                                              |
+| `ic_pause.xml`           | Pause button                                                             |
+| `ic_skip_previous.xml`   | Previous track                                                           |
+| `ic_skip_next.xml`       | Next track                                                               |
+| `ic_shuffle.xml`         | Shuffle off                                                              |
+| `ic_shuffle_on.xml`      | Shuffle on                                                               |
+| `ic_favorite_border.xml` | Not liked (outline heart)                                                |
+| `ic_favorite.xml`        | Liked (filled heart)                                                     |
+| `ic_repeat.xml`          | Repeat off / normal                                                      |
+| `ic_repeat_one.xml`      | Repeat one                                                               |
+| `ic_repeat_all.xml`      | Repeat all (optional)                                                    |
+
+> **Tip:** Use Android Studio → Right-click `res/drawable` → New → Vector Asset → search Material Icons.
+
+### Basic Usage
+
+```typescript
+await CapacitorMediaStore.setMediaSession({
+  title: "Bohemian Rhapsody",
+  artist: "Queen",
+  album: "A Night at the Opera",
+  artworkUrl: "https://example.com/album-art.jpg",
+  duration: 354, // seconds
+  smallIconName: "ic_notification", // Your app logo (24dp, monochrome)
+  buttons: [
+    // position: 'left' = before Previous button
+    {
+      action: "shuffle",
+      displayName: "Shuffle",
+      iconName: "ic_shuffle",
+      enabled: true,
+      position: "left",
+    },
+    // position: 'right' = after Next button (default)
+    {
+      action: "like",
+      displayName: "Like",
+      iconName: "ic_favorite_border",
+      enabled: true,
+      position: "right",
+    },
+    {
+      action: "repeat",
+      displayName: "Repeat",
+      iconName: "ic_repeat",
+      enabled: true,
+      position: "right",
+    },
+  ],
+});
+
+// Update playback state
+await CapacitorMediaStore.updatePlaybackState({ state: "playing" });
+```
+
+> The notification background automatically tints with the dominant color from the album artwork (like YouTube Music / Spotify on Android 13+).
+
+### Listen for Button Events
+
+```typescript
+CapacitorMediaStore.addListener("mediaSessionAction", (event) => {
+  switch (event.action) {
+    case "play":
+      player.play();
+      break;
+    case "pause":
+      player.pause();
+      break;
+    case "nexttrack":
+      player.next();
+      break;
+    case "previoustrack":
+      player.previous();
+      break;
+    case "like":
+      toggleLike();
+      break;
+    case "shuffle":
+      toggleShuffle();
+      break;
+    case "repeat":
+      toggleRepeat();
+      break;
+    case "seekto":
+      player.seekTo(event.extras.seekTime);
+      break;
+  }
+});
+```
+
+### Update Progress Bar
+
+```typescript
+// Update position periodically (e.g., every second)
+setInterval(async () => {
+  await CapacitorMediaStore.updatePositionState({
+    position: player.getCurrentTime(),
+    duration: player.getDuration(),
+    playbackRate: 1.0,
+  });
+}, 1000);
+```
+
+### Dynamically Update Buttons
+
+```typescript
+// Toggle like icon (outline → filled)
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [
+    {
+      action: "like",
+      displayName: "Unlike",
+      iconName: "ic_favorite",
+      enabled: true,
+      position: "right",
+    },
+  ],
+});
+
+// Cycle repeat modes (4 states)
+// Mode 1: Repeat Off
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [
+    {
+      action: "repeat",
+      displayName: "Repeat Off",
+      iconName: "ic_repeat",
+      position: "right",
+    },
+  ],
+});
+// Mode 2: Repeat All
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [
+    {
+      action: "repeat",
+      displayName: "Repeat All",
+      iconName: "ic_repeat_all",
+      position: "right",
+    },
+  ],
+});
+// Mode 3: Repeat One
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [
+    {
+      action: "repeat",
+      displayName: "Repeat One",
+      iconName: "ic_repeat_one",
+      position: "right",
+    },
+  ],
+});
+// Mode 4: Shuffle
+await CapacitorMediaStore.updateMediaSessionButtons({
+  buttons: [
+    {
+      action: "shuffle",
+      displayName: "Shuffle On",
+      iconName: "ic_shuffle_on",
+      position: "left",
+    },
+  ],
+});
+```
+
+### Destroy Session
+
+```typescript
+await CapacitorMediaStore.destroyMediaSession();
+```
+
+---
 
 ## 🎵 Music App Example
 
 ```typescript
 async function buildMusicLibrary() {
-  // Ask for permission to read music files
-  await CapacitorMediaStore.requestPermissions({ types: ['audio'] });
-  
-  // Get all songs from device (including SD card)
+  await CapacitorMediaStore.requestPermissions({ types: ["audio"] });
+
   const result = await CapacitorMediaStore.getMediasByType({
-    mediaType: 'audio',
-    sortBy: 'TITLE',
-    includeExternal: true
+    mediaType: "audio",
+    sortBy: "TITLE",
+    includeExternal: true,
   });
-  
-  // Display songs with details
-  result.media.forEach(song => {
+
+  result.media.forEach((song) => {
     console.log(`${song.title} by ${song.artist}`);
     console.log(`Album: ${song.album}, Duration: ${song.duration}ms`);
-    console.log(`Location: ${song.isExternal ? 'SD Card' : 'Internal'}`);
+    console.log(`Location: ${song.isExternal ? "SD Card" : "Internal"}`);
   });
-  
+
   return result.media;
-}
-```
-
-## 📸 Photo Gallery Example
-
-```typescript
-async function buildPhotoGallery() {
-  // Ask for permission to read photos
-  await CapacitorMediaStore.requestPermissions({ types: ['images'] });
-  
-  // Get recent photos
-  const photos = await CapacitorMediaStore.getMediasByType({
-    mediaType: 'image',
-    sortBy: 'DATE_ADDED',
-    sortOrder: 'DESC',
-    limit: 50
-  });
-  
-  return photos.media;
 }
 ```
 
 ## 📋 API Reference
 
-### Get All Media Files
+### Media Store Methods
 
-```typescript
-getMedias(options?: {
-  limit?: number;           // How many files to get
-  offset?: number;          // Skip first N files  
-  sortBy?: string;          // Sort by: 'DATE_ADDED', 'TITLE', 'SIZE'
-  sortOrder?: 'ASC' | 'DESC'; // Sort direction
-  includeExternal?: boolean; // Include SD card (default: true)
-})
-```
+| Method                         | Description                                             |
+| ------------------------------ | ------------------------------------------------------- |
+| `getMedias(options?)`          | Get all media files from device                         |
+| `getMediasByType(options)`     | Get media files by type (audio, image, video, document) |
+| `getAlbums()`                  | Get all music albums                                    |
+| `saveMedia(options)`           | Save a media file to device storage                     |
+| `getMediaMetadata(options)`    | Get detailed metadata for a specific file               |
+| `checkPermissions()`           | Check current permission status                         |
+| `requestPermissions(options?)` | Request media access permissions                        |
 
-### Get Media by Type
+### File Watcher Methods
 
-```typescript
-getMediasByType(options: {
-  mediaType: 'audio' | 'image' | 'video' | 'document';
-  limit?: number;
-  offset?: number;
-  sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
-  includeExternal?: boolean;
-  albumName?: string;       // Filter by album (audio only)
-  artistName?: string;      // Filter by artist (audio only)
-})
-```
+| Method                    | Description                     |
+| ------------------------- | ------------------------------- |
+| `startWatching(options?)` | Start watching for file changes |
+| `stopWatching()`          | Stop watching for file changes  |
 
-### Get Music Albums
+### Media Session Methods
 
-```typescript
-getAlbums(): Promise<{
-  albums: Array<{
-    id: string;
-    name: string;
-    artist: string;
-    trackCount: number;
-    albumArtUri?: string;
-  }>;
-  totalCount: number;
-}>
-```
+| Method                               | Description                             |
+| ------------------------------------ | --------------------------------------- |
+| `setMediaSession(options)`           | Create/update native media notification |
+| `updatePlaybackState(options)`       | Update playing/paused/buffering state   |
+| `updatePositionState(options)`       | Update progress bar position            |
+| `updateMediaSessionButtons(options)` | Dynamically update button icons         |
+| `destroyMediaSession()`              | Dismiss the media notification          |
 
-### Save Media File
+### Events
 
-```typescript
-saveMedia(options: {
-  data: string;             // Base64 data or file URI
-  fileName: string;         // Name for the file
-  mediaType: 'audio' | 'image' | 'video';
-  albumName?: string;       // Album to save in (optional)
-  relativePath?: string;    // Custom folder path (optional)
-}): Promise<{
-  success: boolean;
-  uri?: string;            // URI of saved file
-  error?: string;          // Error message if failed
-}>
-```
-
-### Get Media Metadata
-
-```typescript
-getMediaMetadata(options: {
-  filePath: string;        // URI of the media file
-}): Promise<{
-  media: MediaFile;        // File with complete metadata
-}>
-```
-
-### Check/Request Permissions
-
-```typescript
-// Check current permissions
-checkPermissions(): Promise<PermissionStatus>
-
-// Request permissions
-requestPermissions(options?: {
-  types?: ('audio' | 'images' | 'video')[];
-}): Promise<PermissionStatus>
-```
+| Event                | Description                                      |
+| -------------------- | ------------------------------------------------ |
+| `mediaChanged`       | Fired when a file is added, deleted, or modified |
+| `mediaSessionAction` | Fired when a notification button is pressed      |
 
 ## 📝 Media File Properties
 
-When you get media files, each file includes:
-
 ```typescript
 interface MediaFile {
-  id: string;               // Unique ID
-  uri: string;              // File path
-  displayName: string;      // File name
-  size: number;             // File size in bytes
-  mimeType: string;         // File type (e.g., 'audio/mp3')
-  dateAdded: number;        // When added to device
-  mediaType: string;        // 'audio', 'image', 'video'
-  
+  id: string; // Unique ID
+  uri: string; // File path
+  displayName: string; // File name
+  size: number; // File size in bytes
+  mimeType: string; // File type (e.g., 'audio/mp3')
+  dateAdded: number; // When added to device
+  mediaType: string; // 'audio', 'image', 'video'
+
   // For music files
-  title?: string;           // Song title
-  artist?: string;          // Artist name
-  album?: string;           // Album name
-  albumArtist?: string;     // Album artist
-  composer?: string;        // Song composer
-  duration?: number;        // Length in milliseconds
-  genre?: string;           // Music genre
-  year?: number;            // Release year
-  track?: number;           // Track number
-  bitrate?: number;         // Audio bitrate (kbps)
-  sampleRate?: number;      // Sample rate (Hz)
-  channels?: number;        // Audio channels (1=mono, 2=stereo)
-  albumArtUri?: string;     // Album cover image URI
-  
+  title?: string; // Song title
+  artist?: string; // Artist name
+  album?: string; // Album name
+  albumArtist?: string; // Album artist
+  composer?: string; // Song composer
+  duration?: number; // Length in milliseconds
+  genre?: string; // Music genre
+  year?: number; // Release year
+  track?: number; // Track number
+  albumArtUri?: string; // Album cover image URI
+
   // For images/videos
-  width?: number;           // Image/video width
-  height?: number;          // Image/video height
-  
+  width?: number; // Width in pixels
+  height?: number; // Height in pixels
+
   // Storage info
-  isExternal?: boolean;     // true if on SD card
+  isExternal?: boolean; // true if on SD card
 }
-```
-
-## 🔧 Permission Types
-
-| Type | What It Accesses | Android Version |
-|------|------------------|-----------------|
-| `audio` | Music, podcasts, sound files | All versions |
-| `images` | Photos, pictures, images | All versions |
-| `video` | Videos, movies | All versions |
-| `document` | PDF, DOC, TXT, and other documents | All versions |
-
-## ❓ Common Questions
-
-### How do I access SD card files?
-
-Set `includeExternal: true` in your options:
-
-```typescript
-const result = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'audio',
-  includeExternal: true  // This includes SD card
-});
-```
-
-### Why am I not getting any files?
-
-1. Make sure you requested permissions first
-2. Check that permissions were granted
-3. Try running on a real device (not simulator)
-
-```typescript
-// Debug permissions
-const permissions = await CapacitorMediaStore.checkPermissions();
-console.log('Current permissions:', permissions);
-```
-
-### How do I filter music by artist or album?
-
-```typescript
-// Get songs by specific artist
-const artistSongs = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'audio',
-  artistName: 'Taylor Swift'
-});
-
-// Get songs from specific album
-const albumSongs = await CapacitorMediaStore.getMediasByType({
-  mediaType: 'audio',
-  albumName: 'Abbey Road'
-});
-```
-
-### How do I save a new media file?
-
-```typescript
-// Save an audio file
-const result = await CapacitorMediaStore.saveMedia({
-  data: 'base64-encoded-audio-data',
-  fileName: 'my-song.mp3',
-  mediaType: 'audio',
-  albumName: 'My Custom Album'
-});
-
-if (result.success) {
-  console.log('File saved at:', result.uri);
-}
-```
-
-### How do I get detailed metadata for a file?
-
-```typescript
-// Get complete metadata for a specific song
-const metadata = await CapacitorMediaStore.getMediaMetadata({
-  filePath: 'content://media/external/audio/media/123'
-});
-
-console.log('Song:', metadata.media.title);
-console.log('Bitrate:', metadata.media.bitrate);
-console.log('Sample Rate:', metadata.media.sampleRate);
 ```
 
 ## 🤝 Platform Support
 
-### 📱 Supported Devices
-
-| Platform | Support Level | Features | Notes |
-|----------|---------------|----------|-------|
-| **Android 6.0+** | ✅ **Full Support** | All media types, SD card, rich metadata | Production ready |
-| **iOS 12+** | 🚧 **Coming Soon** | Photos, videos, music library | Expected Q2 2025 |
-| **Web** | ⚠️ **Development Only** | Mock data for testing | Not for production |
-
-### 🏆 Android Compatibility
-
-- **Android 14+** (API 34+): Visual media permissions, latest features
-- **Android 13** (API 33): Granular media permissions 
-- **Android 10-12** (API 29-32): Scoped storage, external volumes
-- **Android 6-9** (API 23-28): Runtime permissions, full SD card access
-- **Android 5** (API 21-22): Basic support, limited external storage
-
-### 📱 iOS Support Coming Soon!
-
-We're actively working on iOS support with full Photos framework integration. Expected features:
-- Access to Photos and Videos
-- Music library integration
-- Album and artist metadata
+| Platform         | Support Level       | Features                                              |
+| ---------------- | ------------------- | ----------------------------------------------------- |
+| **Android 5.0+** | ✅ **Full Support** | All media types, SD card, media session, file watcher |
+| **iOS 12+**      | ✅ **Supported**    | File watcher, media session, photo library            |
+| **Web**          | ⚠️ **Partial**      | Media session (via Web API), no file watcher          |
 
 ## 💝 Support This Project
 
-Help me improve this plugin and build better tools for the community!
-
 ### 🤝 GitHub Sponsors
+
 - **GitHub Sponsors**: [github.com/sponsors/odion-cloud](https://github.com/sponsors/odion-cloud)
 
 ### ₿ Cryptocurrency Support
+
 - **Bitcoin (BTC)**: `bc1q2k0ftm2fgst22kzj683e8gpau3spfa23ttkg26`
 - **USDT (Ethereum)**: `0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1`
 - **USDT (BNB Chain)**: `0xd6f4d8733c8C23e7bEC8Aeba37F4b3D2e93172d1`
@@ -386,18 +472,11 @@ Help me improve this plugin and build better tools for the community!
 - **USDT (Solana)**: `GZ8jmSUUzc4dQF7Cthj2atomvpBZWqccR81N9DL4o1Be`
 - **USDT (TON)**: `UQAthXSNIlauj3SrzpDAU4VYxgEVV3niOSmeTPCtMBKGfEAE`
 
-### 💻 Why Support?
-Your contributions help me:
-- Upgrade to better development hardware
-- Improve my workspace and productivity  
-- Dedicate more time to open source projects
-- Add iOS support and new features faster
-- Provide better documentation and examples
-
 ### 🤝 Other Ways to Help
+
 - ⭐ **Star the project** on GitHub
 - 🐛 **Report issues** and suggest features
-- 📖 **Improve documentation** 
+- 📖 **Improve documentation**
 - 💬 **Share with other developers**
 
 ## 📄 License

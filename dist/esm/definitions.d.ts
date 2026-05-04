@@ -27,6 +27,39 @@ export interface CapacitorMediaStorePlugin {
      * Request permissions for media access
      */
     requestPermissions(options?: RequestPermissionsOptions): Promise<PermissionStatus>;
+    /**
+     * Start watching for file changes in the device media store.
+     * Emits 'mediaChanged' events when files are added, deleted, or modified.
+     * Register a listener with addListener('mediaChanged', callback) first.
+     */
+    startWatching(options?: WatchOptions): Promise<void>;
+    /**
+     * Stop watching for file changes.
+     */
+    stopWatching(): Promise<void>;
+    /**
+     * Create or update a native media session notification.
+     * On Android, this starts a foreground service with media controls.
+     * On iOS, this updates MPNowPlayingInfoCenter.
+     */
+    setMediaSession(options: MediaSessionOptions): Promise<void>;
+    /**
+     * Update the playback state (playing, paused, buffering, stopped).
+     */
+    updatePlaybackState(options: PlaybackStateOptions): Promise<void>;
+    /**
+     * Update the position/progress bar in the media notification.
+     */
+    updatePositionState(options: PositionStateOptions): Promise<void>;
+    /**
+     * Update the custom buttons shown in the media notification.
+     * Use this to dynamically change button icons (e.g., toggle like icon).
+     */
+    updateMediaSessionButtons(options: MediaSessionButtonOptions): Promise<void>;
+    /**
+     * Destroy the media session and dismiss the notification.
+     */
+    destroyMediaSession(): Promise<void>;
 }
 export interface MediaQueryOptions {
     /**
@@ -292,6 +325,141 @@ export interface PermissionStatus {
      * Write external storage permission (Android 6-9)
      */
     writeExternalStorage?: PermissionState;
+}
+export interface WatchOptions {
+    /**
+     * Filter which media types to watch.
+     * Default: watches all types.
+     */
+    mediaTypes?: MediaType[];
+}
+export interface MediaChangeEvent {
+    /**
+     * The type of change detected
+     */
+    type: 'added' | 'deleted' | 'modified';
+    /**
+     * The file that was changed.
+     * For 'deleted' events, only the 'id' field may be available.
+     */
+    file: MediaFile;
+}
+export interface MediaSessionOptions {
+    /**
+     * Song title
+     */
+    title: string;
+    /**
+     * Artist name
+     */
+    artist: string;
+    /**
+     * Album name
+     */
+    album?: string;
+    /**
+     * Artwork URL (http/https) or base64 data URI
+     */
+    artworkUrl?: string;
+    /**
+     * Duration in seconds
+     */
+    duration?: number;
+    /**
+     * Android only: drawable resource name for the small notification icon (your app logo).
+     *
+     * **How to set up:**
+     * 1. Create a monochrome white-on-transparent icon
+     * 2. Format: Vector XML (24×24dp) or PNG (48×48px mdpi / 72×72 hdpi / 96×96 xhdpi)
+     * 3. Place it in: `android/app/src/main/res/drawable/ic_notification.xml`
+     *    (or `res/drawable-mdpi/ic_notification.png`, `res/drawable-xhdpi/ic_notification.png`, etc.)
+     * 4. Pass just the name without extension: `smallIconName: 'ic_notification'`
+     *
+     * If not provided or not found, defaults to a generic Play icon.
+     */
+    smallIconName?: string;
+    /**
+     * Custom buttons to show in the notification.
+     * Standard transport buttons (prev, play/pause, next) are always included.
+     */
+    buttons?: MediaSessionButton[];
+}
+export interface PlaybackStateOptions {
+    /**
+     * Current playback state
+     */
+    state: 'playing' | 'paused' | 'buffering' | 'stopped' | 'none';
+}
+export interface PositionStateOptions {
+    /**
+     * Current playback position in seconds
+     */
+    position: number;
+    /**
+     * Total duration in seconds
+     */
+    duration: number;
+    /**
+     * Playback speed. Default: 1.0
+     */
+    playbackRate?: number;
+}
+export interface MediaSessionButton {
+    /**
+     * Action identifier. Built-in actions: 'like', 'shuffle', 'repeat', 'radio'.
+     * You can also use custom action names.
+     */
+    action: string;
+    /**
+     * Display name shown as accessibility label
+     */
+    displayName: string;
+    /**
+     * The drawable resource name for the button icon (WITHOUT file extension).
+     *
+     * **Android:** Place icon files in `android/app/src/main/res/drawable/`.
+     * - Format: Vector XML (24dp) or PNG (48×48px for mdpi, 96×96px for xhdpi)
+     * - Naming: Use lowercase with underscores, e.g. `ic_shuffle.xml`
+     * - The plugin resolves by trying: exact name → `ic_<name>` → `ms_<name>`
+     * - Example: `iconName: 'ic_shuffle'` → looks for `res/drawable/ic_shuffle.xml`
+     * - Example: `iconName: 'shuffle'` → looks for `res/drawable/shuffle.xml`,
+     *   then `res/drawable/ic_shuffle.xml`, then `res/drawable/ms_shuffle.xml`
+     *
+     * **iOS:** SF Symbol name (e.g., 'heart', 'shuffle').
+     *
+     * **Tip:** You can use Android Studio's Vector Asset tool to import Material
+     * Icons directly as XML drawables.
+     */
+    iconName: string;
+    /**
+     * Whether the button is enabled/visible. Default: true
+     */
+    enabled?: boolean;
+    /**
+     * Position of the button relative to transport controls.
+     * - `'left'`: Displayed BEFORE the Previous button
+     * - `'right'`: Displayed AFTER the Next button
+     * Default: `'right'`
+     */
+    position?: 'left' | 'right';
+}
+export interface MediaSessionButtonOptions {
+    /**
+     * Updated list of custom buttons
+     */
+    buttons: MediaSessionButton[];
+}
+export interface MediaSessionActionEvent {
+    /**
+     * The action that was triggered.
+     * Values: 'play', 'pause', 'nexttrack', 'previoustrack', 'stop', 'like', 'shuffle', 'repeat',
+     *         'seekto', 'seekforward', 'seekbackward', or any custom action name.
+     */
+    action: string;
+    /**
+     * Extra data for the action (e.g., { seekTime: 30.5 } for seekto)
+     */
+    extras?: Record<string, any>;
 }
 export declare enum MediaType {
     IMAGE = "image",

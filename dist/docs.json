@@ -123,6 +123,116 @@
           "RequestPermissionsOptions"
         ],
         "slug": "requestpermissions"
+      },
+      {
+        "name": "startWatching",
+        "signature": "(options?: WatchOptions | undefined) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "WatchOptions | undefined"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Start watching for file changes in the device media store.\nEmits 'mediaChanged' events when files are added, deleted, or modified.\nRegister a listener with addListener('mediaChanged', callback) first.",
+        "complexTypes": [
+          "WatchOptions"
+        ],
+        "slug": "startwatching"
+      },
+      {
+        "name": "stopWatching",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Stop watching for file changes.",
+        "complexTypes": [],
+        "slug": "stopwatching"
+      },
+      {
+        "name": "setMediaSession",
+        "signature": "(options: MediaSessionOptions) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "MediaSessionOptions"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Create or update a native media session notification.\nOn Android, this starts a foreground service with media controls.\nOn iOS, this updates MPNowPlayingInfoCenter.",
+        "complexTypes": [
+          "MediaSessionOptions"
+        ],
+        "slug": "setmediasession"
+      },
+      {
+        "name": "updatePlaybackState",
+        "signature": "(options: PlaybackStateOptions) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "PlaybackStateOptions"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Update the playback state (playing, paused, buffering, stopped).",
+        "complexTypes": [
+          "PlaybackStateOptions"
+        ],
+        "slug": "updateplaybackstate"
+      },
+      {
+        "name": "updatePositionState",
+        "signature": "(options: PositionStateOptions) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "PositionStateOptions"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Update the position/progress bar in the media notification.",
+        "complexTypes": [
+          "PositionStateOptions"
+        ],
+        "slug": "updatepositionstate"
+      },
+      {
+        "name": "updateMediaSessionButtons",
+        "signature": "(options: MediaSessionButtonOptions) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "MediaSessionButtonOptions"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Update the custom buttons shown in the media notification.\nUse this to dynamically change button icons (e.g., toggle like icon).",
+        "complexTypes": [
+          "MediaSessionButtonOptions"
+        ],
+        "slug": "updatemediasessionbuttons"
+      },
+      {
+        "name": "destroyMediaSession",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Destroy the media session and dismiss the notification.",
+        "complexTypes": [],
+        "slug": "destroymediasession"
       }
     ],
     "properties": []
@@ -677,6 +787,192 @@
           "docs": "Specific permission types to request. If not provided, all permissions will be requested.\nAvailable types: 'images', 'audio', 'video'",
           "complexTypes": [],
           "type": "string[] | undefined"
+        }
+      ]
+    },
+    {
+      "name": "WatchOptions",
+      "slug": "watchoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "mediaTypes",
+          "tags": [],
+          "docs": "Filter which media types to watch.\nDefault: watches all types.",
+          "complexTypes": [
+            "MediaType"
+          ],
+          "type": "MediaType[] | undefined"
+        }
+      ]
+    },
+    {
+      "name": "MediaSessionOptions",
+      "slug": "mediasessionoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "title",
+          "tags": [],
+          "docs": "Song title",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "artist",
+          "tags": [],
+          "docs": "Artist name",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "album",
+          "tags": [],
+          "docs": "Album name",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "artworkUrl",
+          "tags": [],
+          "docs": "Artwork URL (http/https) or base64 data URI",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "duration",
+          "tags": [],
+          "docs": "Duration in seconds",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "smallIconName",
+          "tags": [],
+          "docs": "Android only: drawable resource name for the small notification icon (your app logo).\n\n**How to set up:**\n1. Create a monochrome white-on-transparent icon\n2. Format: Vector XML (24×24dp) or PNG (48×48px mdpi / 72×72 hdpi / 96×96 xhdpi)\n3. Place it in: `android/app/src/main/res/drawable/ic_notification.xml`\n   (or `res/drawable-mdpi/ic_notification.png`, `res/drawable-xhdpi/ic_notification.png`, etc.)\n4. Pass just the name without extension: `smallIconName: 'ic_notification'`\n\nIf not provided or not found, defaults to a generic Play icon.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "buttons",
+          "tags": [],
+          "docs": "Custom buttons to show in the notification.\nStandard transport buttons (prev, play/pause, next) are always included.",
+          "complexTypes": [
+            "MediaSessionButton"
+          ],
+          "type": "MediaSessionButton[] | undefined"
+        }
+      ]
+    },
+    {
+      "name": "MediaSessionButton",
+      "slug": "mediasessionbutton",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "action",
+          "tags": [],
+          "docs": "Action identifier. Built-in actions: 'like', 'shuffle', 'repeat', 'radio'.\nYou can also use custom action names.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "displayName",
+          "tags": [],
+          "docs": "Display name shown as accessibility label",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "iconName",
+          "tags": [],
+          "docs": "The drawable resource name for the button icon (WITHOUT file extension).\n\n**Android:** Place icon files in `android/app/src/main/res/drawable/`.\n- Format: Vector XML (24dp) or PNG (48×48px for mdpi, 96×96px for xhdpi)\n- Naming: Use lowercase with underscores, e.g. `ic_shuffle.xml`\n- The plugin resolves by trying: exact name → `ic_<name>` → `ms_<name>`\n- Example: `iconName: 'ic_shuffle'` → looks for `res/drawable/ic_shuffle.xml`\n- Example: `iconName: 'shuffle'` → looks for `res/drawable/shuffle.xml`,\n  then `res/drawable/ic_shuffle.xml`, then `res/drawable/ms_shuffle.xml`\n\n**iOS:** SF Symbol name (e.g., 'heart', 'shuffle').\n\n**Tip:** You can use Android Studio's Vector Asset tool to import Material\nIcons directly as XML drawables.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "enabled",
+          "tags": [],
+          "docs": "Whether the button is enabled/visible. Default: true",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "position",
+          "tags": [],
+          "docs": "Position of the button relative to transport controls.\n- `'left'`: Displayed BEFORE the Previous button\n- `'right'`: Displayed AFTER the Next button\nDefault: `'right'`",
+          "complexTypes": [],
+          "type": "'left' | 'right' | undefined"
+        }
+      ]
+    },
+    {
+      "name": "PlaybackStateOptions",
+      "slug": "playbackstateoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "state",
+          "tags": [],
+          "docs": "Current playback state",
+          "complexTypes": [],
+          "type": "'playing' | 'paused' | 'buffering' | 'stopped' | 'none'"
+        }
+      ]
+    },
+    {
+      "name": "PositionStateOptions",
+      "slug": "positionstateoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "position",
+          "tags": [],
+          "docs": "Current playback position in seconds",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "duration",
+          "tags": [],
+          "docs": "Total duration in seconds",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "playbackRate",
+          "tags": [],
+          "docs": "Playback speed. Default: 1.0",
+          "complexTypes": [],
+          "type": "number | undefined"
+        }
+      ]
+    },
+    {
+      "name": "MediaSessionButtonOptions",
+      "slug": "mediasessionbuttonoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "buttons",
+          "tags": [],
+          "docs": "Updated list of custom buttons",
+          "complexTypes": [
+            "MediaSessionButton"
+          ],
+          "type": "MediaSessionButton[]"
         }
       ]
     }

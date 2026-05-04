@@ -127,6 +127,99 @@ var CapacitorMediaStoreWeb = /** @class */ (function (_super) {
             });
         });
     };
+    // ──────────────────────────────────────────────
+    // File Change Watcher (web stubs)
+    // ──────────────────────────────────────────────
+    CapacitorMediaStoreWeb.prototype.startWatching = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.startWatching() is not supported on web platform');
+                throw this.unimplemented('Not implemented on web.');
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.stopWatching = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.stopWatching() is not supported on web platform');
+                throw this.unimplemented('Not implemented on web.');
+            });
+        });
+    };
+    // ──────────────────────────────────────────────
+    // Native Media Session (web fallback using Web MediaSession API)
+    // ──────────────────────────────────────────────
+    CapacitorMediaStoreWeb.prototype.setMediaSession = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            var artwork;
+            return __generator(this, function (_a) {
+                if ('mediaSession' in navigator) {
+                    artwork = [];
+                    if (options.artworkUrl) {
+                        artwork.push({ src: options.artworkUrl, sizes: '512x512', type: 'image/png' });
+                    }
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: options.title,
+                        artist: options.artist,
+                        album: options.album || '',
+                        artwork: artwork,
+                    });
+                }
+                else {
+                    console.warn('CapacitorMediaStore.setMediaSession() - Web MediaSession API not available');
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.updatePlaybackState = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = options.state === 'playing' ? 'playing' : options.state === 'paused' ? 'paused' : 'none';
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.updatePositionState = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if ('mediaSession' in navigator && navigator.mediaSession.setPositionState) {
+                    try {
+                        navigator.mediaSession.setPositionState({
+                            duration: options.duration,
+                            playbackRate: options.playbackRate || 1.0,
+                            position: options.position,
+                        });
+                    }
+                    catch (e) {
+                        console.warn('CapacitorMediaStore.updatePositionState() error:', e);
+                    }
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.updateMediaSessionButtons = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.updateMediaSessionButtons() - Custom buttons not supported on web');
+                return [2 /*return*/];
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.destroyMediaSession = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = null;
+                    navigator.mediaSession.playbackState = 'none';
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
     return CapacitorMediaStoreWeb;
 }(core_1.WebPlugin));
 exports.CapacitorMediaStoreWeb = CapacitorMediaStoreWeb;
