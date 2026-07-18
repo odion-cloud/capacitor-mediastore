@@ -14,9 +14,6 @@
     <!-- Android 14+ Visual media permissions -->
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     
-    <!-- Optional: Access to external storage volumes -->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" 
-                     android:minSdkVersion="30" />
 
     <!-- Media Session: Foreground service permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

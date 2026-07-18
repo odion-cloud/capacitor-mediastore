@@ -28,6 +28,9 @@ import AVFoundation
     private var currentPlaybackRate: Float = 1.0
     private var isPlaying = false
     
+    // Native action listener for other native plugins (no JS bridge needed)
+    private var nativeActionListener: ((String, [String: Any]?) -> Void)?
+    
     // ──────────────────────────────────────────────
     // Existing Media Store methods
     // ──────────────────────────────────────────────
@@ -454,6 +457,130 @@ import AVFoundation
         call.resolve()
     }
     
+    // ──────────────────────────────────────────────
+    // Native API — for other plugins to call directly
+    // (No CAPPluginCall/JS bridge needed)
+    // ──────────────────────────────────────────────
+    
+    /**
+     * Register a native action listener. When a media button is tapped,
+     * this listener fires alongside the JS "mediaSessionAction" event.
+     */
+    public func setNativeActionListener(_ listener: ((String, [String: Any]?) -> Void)?) {
+        nativeActionListener = listener
+    }
+    
+    /**
+     * Set media session metadata from native code (no CAPPluginCall needed).
+     */
+    public func setMediaSessionNative(
+        title: String,
+        artist: String,
+        album: String? = nil,
+        artworkUrl: String? = nil,
+        duration: Double? = nil,
+        buttons: [[String: Any]]? = nil
+    ) {
+        currentDuration = duration ?? 0
+        
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("CapacitorMediaStore: Failed to configure audio session: \(error)")
+        }
+        
+        nowPlayingInfo = [
+            MPMediaItemPropertyTitle: title,
+            MPMediaItemPropertyArtist: artist,
+            MPMediaItemPropertyAlbumTitle: album ?? "",
+            MPMediaItemPropertyPlaybackDuration: currentDuration,
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: currentPosition,
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? currentPlaybackRate : 0.0
+        ]
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        
+        if !isMediaSessionActive {
+            setupRemoteCommandCenter()
+            isMediaSessionActive = true
+        }
+        
+        if let buttons = buttons {
+            configureCustomButtons(buttons)
+        }
+        
+        if let artworkUrl = artworkUrl, !artworkUrl.isEmpty {
+            loadArtwork(from: artworkUrl)
+        }
+    }
+    
+    /**
+     * Update playback state from native code.
+     */
+    public func updatePlaybackStateNative(state: String) {
+        isPlaying = (state == "playing")
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? NSNumber(value: currentPlaybackRate) : NSNumber(value: 0.0)
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentPosition
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+    
+    /**
+     * Update position/duration from native code.
+     */
+    public func updatePositionStateNative(position: Double, duration: Double, playbackRate: Float) {
+        currentPosition = position
+        currentDuration = duration
+        currentPlaybackRate = playbackRate
+        
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = currentDuration
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentPosition
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? NSNumber(value: currentPlaybackRate) : NSNumber(value: 0.0)
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+    
+    /**
+     * Update custom buttons from native code.
+     */
+    public func updateMediaSessionButtonsNative(buttons: [[String: Any]]) {
+        configureCustomButtons(buttons)
+    }
+    
+    /**
+     * Destroy media session from native code.
+     */
+    public func destroyMediaSessionNative() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.playCommand.isEnabled = false
+        commandCenter.pauseCommand.isEnabled = false
+        commandCenter.togglePlayPauseCommand.isEnabled = false
+        commandCenter.nextTrackCommand.isEnabled = false
+        commandCenter.previousTrackCommand.isEnabled = false
+        commandCenter.changePlaybackPositionCommand.isEnabled = false
+        commandCenter.skipForwardCommand.isEnabled = false
+        commandCenter.skipBackwardCommand.isEnabled = false
+        commandCenter.likeCommand.isEnabled = false
+        commandCenter.changeShuffleModeCommand.isEnabled = false
+        commandCenter.changeRepeatModeCommand.isEnabled = false
+        commandCenter.playCommand.removeTarget(nil)
+        commandCenter.pauseCommand.removeTarget(nil)
+        commandCenter.togglePlayPauseCommand.removeTarget(nil)
+        commandCenter.nextTrackCommand.removeTarget(nil)
+        commandCenter.previousTrackCommand.removeTarget(nil)
+        commandCenter.changePlaybackPositionCommand.removeTarget(nil)
+        commandCenter.skipForwardCommand.removeTarget(nil)
+        commandCenter.skipBackwardCommand.removeTarget(nil)
+        commandCenter.likeCommand.removeTarget(nil)
+        commandCenter.changeShuffleModeCommand.removeTarget(nil)
+        commandCenter.changeRepeatModeCommand.removeTarget(nil)
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        nowPlayingInfo = [:]
+        isMediaSessionActive = false
+        isPlaying = false
+        currentPosition = 0
+        currentDuration = 0
+    }
+    
     private func setupRemoteCommandCenter() {
         let commandCenter = MPRemoteCommandCenter.shared()
         
@@ -464,6 +591,7 @@ import AVFoundation
             self?.nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: self?.currentPlaybackRate ?? 1.0)
             MPNowPlayingInfoCenter.default().nowPlayingInfo = self?.nowPlayingInfo
             self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "play"])
+            self?.nativeActionListener?("play", nil)
             return .success
         }
         
@@ -474,6 +602,7 @@ import AVFoundation
             self?.nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: 0.0)
             MPNowPlayingInfoCenter.default().nowPlayingInfo = self?.nowPlayingInfo
             self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "pause"])
+            self?.nativeActionListener?("pause", nil)
             return .success
         }
         
@@ -486,6 +615,7 @@ import AVFoundation
             self?.nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: rate)
             MPNowPlayingInfoCenter.default().nowPlayingInfo = self?.nowPlayingInfo
             self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": action])
+            self?.nativeActionListener?(action, nil)
             return .success
         }
         
@@ -493,6 +623,7 @@ import AVFoundation
         commandCenter.nextTrackCommand.isEnabled = true
         commandCenter.nextTrackCommand.addTarget { [weak self] _ in
             self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "nexttrack"])
+            self?.nativeActionListener?("nexttrack", nil)
             return .success
         }
         
@@ -500,6 +631,7 @@ import AVFoundation
         commandCenter.previousTrackCommand.isEnabled = true
         commandCenter.previousTrackCommand.addTarget { [weak self] _ in
             self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "previoustrack"])
+            self?.nativeActionListener?("previoustrack", nil)
             return .success
         }
         
@@ -514,6 +646,7 @@ import AVFoundation
                     "action": "seekto",
                     "extras": ["seekTime": posEvent.positionTime]
                 ])
+                self?.nativeActionListener?("seekto", ["seekTime": posEvent.positionTime])
             }
             return .success
         }
@@ -523,6 +656,7 @@ import AVFoundation
         commandCenter.skipForwardCommand.preferredIntervals = [15]
         commandCenter.skipForwardCommand.addTarget { [weak self] _ in
             self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "seekforward"])
+            self?.nativeActionListener?("seekforward", nil)
             return .success
         }
         
@@ -531,6 +665,7 @@ import AVFoundation
         commandCenter.skipBackwardCommand.preferredIntervals = [15]
         commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
             self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "seekbackward"])
+            self?.nativeActionListener?("seekbackward", nil)
             return .success
         }
     }
@@ -550,6 +685,7 @@ import AVFoundation
                     commandCenter.likeCommand.localizedTitle = (btn["displayName"] as? String) ?? "Like"
                     commandCenter.likeCommand.addTarget { [weak self] _ in
                         self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "like"])
+                        self?.nativeActionListener?("like", nil)
                         return .success
                     }
                 }
@@ -559,6 +695,7 @@ import AVFoundation
                     commandCenter.changeShuffleModeCommand.removeTarget(nil)
                     commandCenter.changeShuffleModeCommand.addTarget { [weak self] _ in
                         self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "shuffle"])
+                        self?.nativeActionListener?("shuffle", nil)
                         return .success
                     }
                 }
@@ -568,6 +705,7 @@ import AVFoundation
                     commandCenter.changeRepeatModeCommand.removeTarget(nil)
                     commandCenter.changeRepeatModeCommand.addTarget { [weak self] _ in
                         self?.plugin?.notifyListeners("mediaSessionAction", data: ["action": "repeat"])
+                        self?.nativeActionListener?("repeat", nil)
                         return .success
                     }
                 }
@@ -593,6 +731,15 @@ import AVFoundation
                         image = UIImage(data: data)
                     }
                 }
+            } else if urlString.hasPrefix("file://") || urlString.hasPrefix("/") {
+                // Local file path
+                let filePath = urlString.hasPrefix("file://") ? String(urlString.dropFirst(7)) : urlString
+                // Try direct image decode first
+                image = UIImage(contentsOfFile: filePath)
+                // If nil, try extracting embedded album art (for audio files)
+                if image == nil {
+                    image = self.extractEmbeddedArt(from: filePath)
+                }
             } else if let url = URL(string: urlString) {
                 // HTTP/HTTPS URL
                 if let data = try? Data(contentsOf: url) {
@@ -608,6 +755,22 @@ import AVFoundation
                 }
             }
         }
+    }
+    
+    /**
+     * Extract embedded album art from an audio file using AVAsset.
+     * Works for MP3 (ID3), M4A, FLAC, etc.
+     */
+    private func extractEmbeddedArt(from filePath: String) -> UIImage? {
+        let url = URL(fileURLWithPath: filePath)
+        let asset = AVAsset(url: url)
+        for metadata in asset.commonMetadata {
+            if metadata.commonKey == .commonKeyArtwork,
+               let data = metadata.dataValue {
+                return UIImage(data: data)
+            }
+        }
+        return nil
     }
     
     deinit {

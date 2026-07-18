@@ -1,0 +1,34 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-release-26:/values-land/values-land.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Windows\\.gradle\\caches\\8.11.1\\transforms\\c37cb5fd04805a4a7ae501ea6abd0e56\\transformed\\appcompat-1.7.0\\res\\values-land\\values-land.xml",
+                    "from": {
+                        "startLines": "2,3,4",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,125,196",
+                        "endColumns": "69,70,67",
+                        "endOffsets": "120,191,259"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-mergeReleaseResources-24:/values-land/values-land.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Windows\\.gradle\\caches\\8.11.1\\transforms\\c37cb5fd04805a4a7ae501ea6abd0e56\\transformed\\appcompat-1.7.0\\res\\values-land\\values-land.xml",
+                    "from": {
+                        "startLines": "2,3,4",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,125,196",
+                        "endColumns": "69,70,67",
+                        "endOffsets": "120,191,259"
+                    }
+                }
+            ]
+        }
+    ]
+}

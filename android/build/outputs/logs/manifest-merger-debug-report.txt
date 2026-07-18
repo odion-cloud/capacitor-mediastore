@@ -1,7 +1,7 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:1:1-59:12
-INJECTED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:1:1-59:12
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:1:1-56:12
+INJECTED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:1:1-56:12
 	package
 		INJECTED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml
 	xmlns:android
@@ -34,56 +34,50 @@ uses-permission#android.permission.READ_MEDIA_VISUAL_USER_SELECTED
 ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:15:5-90
 	android:name
 		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:15:22-87
-uses-permission#android.permission.MANAGE_EXTERNAL_STORAGE
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:18:5-19:51
-	android:minSdkVersion
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:19:22-48
-	android:name
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:18:22-79
 uses-permission#android.permission.FOREGROUND_SERVICE
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:22:5-77
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:19:5-77
 	android:name
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:22:22-74
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:19:22-74
 uses-permission#android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:5-92
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:20:5-92
 	android:name
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:22-89
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:20:22-89
 uses-permission#android.permission.POST_NOTIFICATIONS
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:5-77
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:5-77
 	android:name
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:22-74
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:22-74
 uses-permission#android.permission.INTERNET
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:29:5-67
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:5-67
 	android:name
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:29:22-64
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:22-64
 queries
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:5-45:15
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:29:5-42:15
 intent#action:name:android.intent.action.GET_CONTENT+data:mimeType:audio/*
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:33:9-36:18
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:30:9-33:18
 action#android.intent.action.GET_CONTENT
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:13-72
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:13-72
 	android:name
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:21-69
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:21-69
 data
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:13-48
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:13-48
 	android:mimeType
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:19-45
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:19-45
 intent#action:name:android.intent.action.GET_CONTENT+data:mimeType:video/*
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:37:9-40:18
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:9-37:18
 intent#action:name:android.intent.action.GET_CONTENT+data:mimeType:image/*
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:41:9-44:18
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:38:9-41:18
 application
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:47:5-57:19
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:44:5-54:19
 service#com.capacitor.mediastore.MediaSessionService
-ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:51:9-56:19
+ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:48:9-53:19
 	android:enabled
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:53:13-35
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:50:13-35
 	android:exported
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:54:13-37
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:51:13-37
 	android:foregroundServiceType
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:55:13-58
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:52:13-58
 	android:name
-		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:52:13-72
+		ADDED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:49:13-72
 uses-sdk
 INJECTED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml

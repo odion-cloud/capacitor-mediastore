@@ -8,7 +8,9 @@ import Photos
  */
 @objc(CapacitorMediaStorePlugin)
 public class CapacitorMediaStorePlugin: CAPPlugin {
-    private let implementation = CapacitorMediaStore()
+    /// The implementation is public so other native plugins can access the Native API
+    /// (e.g. `setNativeActionListener`, `setMediaSessionNative`, etc.)
+    public let implementation = CapacitorMediaStore()
 
     public override func load() {
         implementation.plugin = self

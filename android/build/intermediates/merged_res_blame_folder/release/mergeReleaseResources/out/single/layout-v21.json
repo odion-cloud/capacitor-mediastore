@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-release-26:/layout-v21/notification_template_custom_big.xml",
+        "source": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-core-1.15.0-17:/layout-v21/notification_template_custom_big.xml"
+    },
+    {
+        "merged": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-release-26:/layout-v21/notification_template_icon_group.xml",
+        "source": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-core-1.15.0-17:/layout-v21/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-release-26:/layout-v21/notification_action_tombstone.xml",
+        "source": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-core-1.15.0-17:/layout-v21/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-release-26:/layout-v21/notification_action.xml",
+        "source": "com.capacitor.mediastore.odion-cloud-capacitor-mediastore-core-1.15.0-17:/layout-v21/notification_action.xml"
+    }
+]

@@ -865,6 +865,178 @@ await CapacitorMediaStore.updateMediaSessionButtons({
                 <pre>await CapacitorMediaStore.destroyMediaSession();</pre>
             </div>
 
+            <h3>🔌 Native Plugin API (Kotlin / Swift)</h3>
+            <p>Other native Capacitor plugins can control the media session <strong>directly from Kotlin/Swift</strong> — no JS bridge needed. This is essential for background playback during Android Doze mode.</p>
+
+            <div class="alert alert-success">
+                <strong>Dual-Mode Architecture:</strong> The same MediaSession service powers both the JS API and the Native API. JS callers use <code>@PluginMethod</code> methods, native callers use the <code>*Native()</code> methods. Both fire simultaneously.
+            </div>
+
+            <h4>Android (Kotlin)</h4>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Get the MediaStore plugin instance (both plugins on the same bridge)
+val mediaStore = bridge.getPlugin("CapacitorMediaStore").instance as MediaStorePlugin
+
+// Register native action listener (fires even in Doze mode)
+mediaStore.setNativeActionListener { action, extras -&gt;
+    when (action) {
+        "play"          -&gt; exoPlayer.play()
+        "pause"         -&gt; exoPlayer.pause()
+        "nexttrack"     -&gt; exoPlayer.nextTrack()
+        "previoustrack" -&gt; exoPlayer.prevTrack()
+        "like"          -&gt; toggleFavourite()
+        "repeat"        -&gt; cycleRepeatMode()
+        "seekto"        -&gt; {
+            val time = extras?.get("seekTime") as? Double
+            exoPlayer.seekTo(time ?: 0.0)
+        }
+    }
+}
+
+// Set metadata with custom buttons
+mediaStore.setMediaSessionNative(
+    title = "Bohemian Rhapsody",
+    artist = "Queen",
+    artworkUrl = "https://example.com/art.jpg",
+    duration = 354L,
+    smallIconName = "ic_notification",
+    buttons = listOf(
+        MediaSessionService.CustomButton("like", "Like", "ic_favorite_border", true, "left"),
+        MediaSessionService.CustomButton("repeat", "Repeat", "ic_repeat_all", true, "right")
+    )
+)
+
+// Sync playback state from ExoPlayer callbacks
+mediaStore.updatePlaybackStateNative("playing")
+
+// Update progress bar from a heartbeat timer (every 2s)
+mediaStore.updatePositionStateNative(
+    position = 45.0,
+    duration = 354.0,
+    playbackRate = 1.0f
+)
+
+// Destroy when done
+mediaStore.destroyMediaSessionNative()</pre>
+            </div>
+
+            <h4>iOS (Swift)</h4>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Get the CapacitorMediaStore implementation
+let plugin = bridge.plugin(withName: "CapacitorMediaStore") as? CapacitorMediaStorePlugin
+let mediaStore = plugin?.implementation
+
+// Register native action listener
+mediaStore?.setNativeActionListener { action, extras in
+    switch action {
+    case "play": player.play()
+    case "pause": player.pause()
+    case "nexttrack": player.next()
+    case "previoustrack": player.previous()
+    default: break
+    }
+}
+
+// Set metadata
+mediaStore?.setMediaSessionNative(
+    title: "Bohemian Rhapsody",
+    artist: "Queen",
+    artworkUrl: "https://example.com/art.jpg",
+    duration: 354.0
+)
+
+// Update playback state
+mediaStore?.updatePlaybackStateNative(state: "playing")
+
+// Update progress bar
+mediaStore?.updatePositionStateNative(position: 45.0, duration: 354.0, playbackRate: 1.0)</pre>
+            </div>
+
+            <h4>Native API Reference</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>setNativeActionListener(listener)</code></td>
+                        <td>Register callback for notification button taps (fires alongside JS event)</td>
+                    </tr>
+                    <tr>
+                        <td><code>setMediaSessionNative(...)</code></td>
+                        <td>Create/update media notification with metadata and buttons</td>
+                    </tr>
+                    <tr>
+                        <td><code>updatePlaybackStateNative(state)</code></td>
+                        <td>Update playing/paused state</td>
+                    </tr>
+                    <tr>
+                        <td><code>updatePositionStateNative(pos, dur, rate)</code></td>
+                        <td>Update progress bar position and duration</td>
+                    </tr>
+                    <tr>
+                        <td><code>updateMediaSessionButtonsNative(buttons)</code></td>
+                        <td>Update button icons (merge strategy)</td>
+                    </tr>
+                    <tr>
+                        <td><code>destroyMediaSessionNative()</code></td>
+                        <td>Dismiss the notification and release resources</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>🖼️ Artwork Sources</h3>
+            <p>The media session supports artwork from multiple sources automatically:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Format</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>HTTP/HTTPS URL</td>
+                        <td>Remote image</td>
+                        <td><code>https://example.com/art.jpg</code></td>
+                    </tr>
+                    <tr>
+                        <td>Base64 data URI</td>
+                        <td>Inline image</td>
+                        <td><code>data:image/png;base64,...</code></td>
+                    </tr>
+                    <tr>
+                        <td>Local file path</td>
+                        <td>Device storage</td>
+                        <td><code>/storage/emulated/0/Music/art.jpg</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>file://</code> URI</td>
+                        <td>Device storage</td>
+                        <td><code>file:///storage/emulated/0/Music/art.jpg</code></td>
+                    </tr>
+                    <tr>
+                        <td>Audio file path</td>
+                        <td>Embedded album art</td>
+                        <td><code>/storage/emulated/0/Music/song.mp3</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>content://</code> URI</td>
+                        <td>Content provider</td>
+                        <td><code>content://media/external/audio/albumart/123</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="alert alert-info">
+                <strong>Offline Artwork:</strong> When you pass an audio file path (e.g. an MP3/FLAC), the plugin automatically extracts embedded album art using <code>MediaMetadataRetriever</code> (Android) or <code>AVAsset</code> (iOS).
+            </div>
+
             <div class="alert alert-warning">
                 <strong>Android Icons:</strong> All <code>iconName</code> values must match a file in
                 <code>android/app/src/main/res/drawable/</code>. Without them, the plugin falls back to a generic Play

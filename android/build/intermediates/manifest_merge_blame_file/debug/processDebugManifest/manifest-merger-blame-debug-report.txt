@@ -34,85 +34,77 @@
 21-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:15:5-90
 21-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:15:22-87
 22
-23    <!-- Optional: Access to external storage volumes -->
-24    <uses-permission
-24-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:18:5-19:51
-25        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-25-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:18:22-79
-26        android:minSdkVersion="30" />
-26-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:19:22-48
-27
-28    <!-- Media Session: Foreground service permissions -->
-29    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-29-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:22:5-77
-29-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:22:22-74
-30    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-30-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:5-92
-30-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:22-89
-31
-32    <!-- Notification permission for Android 13+ -->
-33    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-33-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:5-77
-33-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:22-74
-34
-35    <!-- Internet for loading artwork from URL -->
-36    <uses-permission android:name="android.permission.INTERNET" />
-36-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:29:5-67
-36-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:29:22-64
+23    <!-- Media Session: Foreground service permissions -->
+24    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+24-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:19:5-77
+24-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:19:22-74
+25    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+25-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:20:5-92
+25-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:20:22-89
+26
+27    <!-- Notification permission for Android 13+ -->
+28    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+28-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:5-77
+28-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:23:22-74
+29
+30    <!-- Internet for loading artwork from URL -->
+31    <uses-permission android:name="android.permission.INTERNET" />
+31-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:5-67
+31-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:26:22-64
+32
+33    <!-- Query for media apps (Android 11+) -->
+34    <queries>
+34-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:29:5-42:15
+35        <intent>
+35-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:30:9-33:18
+36            <action android:name="android.intent.action.GET_CONTENT" />
+36-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:13-72
+36-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:21-69
 37
-38    <!-- Query for media apps (Android 11+) -->
-39    <queries>
-39-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:5-45:15
+38            <data android:mimeType="audio/*" />
+38-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:13-48
+38-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:19-45
+39        </intent>
 40        <intent>
-40-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:33:9-36:18
+40-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:9-37:18
 41            <action android:name="android.intent.action.GET_CONTENT" />
-41-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:13-72
-41-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:21-69
+41-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:13-72
+41-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:21-69
 42
-43            <data android:mimeType="audio/*" />
-43-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:13-48
-43-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:19-45
+43            <data android:mimeType="video/*" />
+43-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:13-48
+43-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:19-45
 44        </intent>
 45        <intent>
-45-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:37:9-40:18
+45-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:38:9-41:18
 46            <action android:name="android.intent.action.GET_CONTENT" />
-46-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:13-72
-46-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:21-69
+46-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:13-72
+46-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:31:21-69
 47
-48            <data android:mimeType="video/*" />
-48-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:13-48
-48-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:19-45
+48            <data android:mimeType="image/*" />
+48-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:13-48
+48-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:32:19-45
 49        </intent>
-50        <intent>
-50-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:41:9-44:18
-51            <action android:name="android.intent.action.GET_CONTENT" />
-51-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:13-72
-51-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:34:21-69
-52
-53            <data android:mimeType="image/*" />
-53-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:13-48
-53-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:35:19-45
-54        </intent>
-55    </queries>
+50    </queries>
+51
+52    <application>
+52-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:44:5-54:19
+53
+54        <!-- Plugin registration will be handled by Capacitor -->
+55
 56
-57    <application>
-57-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:47:5-57:19
-58
-59        <!-- Plugin registration will be handled by Capacitor -->
-60
-61
-62        <!-- Media Session Foreground Service -->
-63        <service
-63-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:51:9-56:19
-64            android:name="com.capacitor.mediastore.MediaSessionService"
-64-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:52:13-72
-65            android:enabled="true"
-65-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:53:13-35
-66            android:exported="false"
-66-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:54:13-37
-67            android:foregroundServiceType="mediaPlayback" >
-67-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:55:13-58
-68        </service>
-69    </application>
-70
-71</manifest>
+57        <!-- Media Session Foreground Service -->
+58        <service
+58-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:48:9-53:19
+59            android:name="com.capacitor.mediastore.MediaSessionService"
+59-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:49:13-72
+60            android:enabled="true"
+60-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:50:13-35
+61            android:exported="false"
+61-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:51:13-37
+62            android:foregroundServiceType="mediaPlayback" >
+62-->C:\laragon\www\mediastore\android\src\main\AndroidManifest.xml:52:13-58
+63        </service>
+64    </application>
+65
+66</manifest>

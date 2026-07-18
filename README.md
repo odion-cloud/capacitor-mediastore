@@ -399,7 +399,7 @@ async function buildMusicLibrary() {
 | `startWatching(options?)` | Start watching for file changes |
 | `stopWatching()`          | Stop watching for file changes  |
 
-### Media Session Methods
+### Media Session Methods (JS API)
 
 | Method                               | Description                             |
 | ------------------------------------ | --------------------------------------- |
@@ -408,6 +408,95 @@ async function buildMusicLibrary() {
 | `updatePositionState(options)`       | Update progress bar position            |
 | `updateMediaSessionButtons(options)` | Dynamically update button icons         |
 | `destroyMediaSession()`              | Dismiss the media notification          |
+
+### Media Session Methods (Native Plugin API)
+
+These methods allow other native Capacitor plugins (e.g. a media player plugin) to control the media session **directly from Kotlin/Swift** — no JS bridge needed. This is critical for background/Doze mode resilience.
+
+| Method (Android/Kotlin)                                               | Description                                           |
+| --------------------------------------------------------------------- | ----------------------------------------------------- |
+| `setNativeActionListener(listener)`                                    | Register a callback for notification button taps       |
+| `setMediaSessionNative(title, artist, album?, artworkUrl?, duration?, smallIconName?, buttons?)` | Create/update the notification |
+| `updatePlaybackStateNative(state)`                                     | Update playing/paused state                           |
+| `updatePositionStateNative(position, duration, playbackRate)`          | Update progress bar                                   |
+| `updateMediaSessionButtonsNative(buttons)`                             | Update button icons                                   |
+| `destroyMediaSessionNative()`                                          | Dismiss the notification                              |
+
+**Usage from another Capacitor plugin (Kotlin):**
+
+```kotlin
+// Get the MediaStore plugin instance (both plugins loaded on the same bridge)
+val mediaStore = bridge.getPlugin("CapacitorMediaStore").instance as MediaStorePlugin
+
+// Register native action listener (works even in Doze mode)
+mediaStore.setNativeActionListener { action, extras ->
+    when (action) {
+        "play" -> exoPlayer.play()
+        "pause" -> exoPlayer.pause()
+        "nexttrack" -> exoPlayer.nextTrack()
+        "like" -> toggleFavourite()
+        "repeat" -> cycleRepeatMode()
+    }
+}
+
+// Set metadata with buttons
+mediaStore.setMediaSessionNative(
+    title = "Bohemian Rhapsody",
+    artist = "Queen",
+    artworkUrl = "https://example.com/art.jpg",
+    duration = 354L,
+    smallIconName = "ic_notification",
+    buttons = listOf(
+        MediaSessionService.CustomButton("like", "Like", "ic_favorite_border", true, "left"),
+        MediaSessionService.CustomButton("repeat", "Repeat", "ic_repeat_all", true, "right")
+    )
+)
+
+// Sync playback state
+mediaStore.updatePlaybackStateNative("playing")
+
+// Update progress bar (from a heartbeat/timer)
+mediaStore.updatePositionStateNative(position = 45.0, duration = 354.0, playbackRate = 1.0f)
+```
+
+**Usage from another Capacitor plugin (Swift):**
+
+```swift
+// Get the MediaStore implementation instance
+let mediaStore = bridge.plugin(withName: "CapacitorMediaStore") as? CapacitorMediaStorePlugin
+
+// Register native action listener
+mediaStore?.implementation.setNativeActionListener { action, extras in
+    switch action {
+    case "play": player.play()
+    case "pause": player.pause()
+    default: break
+    }
+}
+
+// Set metadata
+mediaStore?.implementation.setMediaSessionNative(
+    title: "Bohemian Rhapsody",
+    artist: "Queen",
+    artworkUrl: "https://example.com/art.jpg",
+    duration: 354.0
+)
+```
+
+### Artwork Sources
+
+The media session supports artwork from multiple sources:
+
+| Source | Format | Example |
+|---|---|---|
+| HTTP/HTTPS URL | Remote image | `https://example.com/art.jpg` |
+| Base64 data URI | Inline image | `data:image/png;base64,...` |
+| Local file path | Device storage | `/storage/emulated/0/Music/art.jpg` |
+| `file://` URI | Device storage | `file:///storage/emulated/0/Music/art.jpg` |
+| Audio file path | Embedded album art | `/storage/emulated/0/Music/song.mp3` |
+| `content://` URI | Content provider | `content://media/external/audio/albumart/123` |
+
+> **Offline artwork**: When you pass an audio file path (e.g. an MP3), the plugin automatically extracts embedded album art using `MediaMetadataRetriever` (Android) or `AVAsset` (iOS).
 
 ### Events
 

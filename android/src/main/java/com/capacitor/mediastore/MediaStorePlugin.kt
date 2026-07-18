@@ -76,6 +76,7 @@ class MediaStorePlugin : Plugin() {
             mediaSessionService = binder.getService()
             mediaSessionService?.actionListener = object : MediaSessionService.MediaSessionActionListener {
                 override fun onAction(action: String, extras: Map<String, Any>?) {
+                    // Always emit JS event (works when JS is alive)
                     val event = JSObject().apply {
                         put("action", action)
                         if (extras != null) {
@@ -93,14 +94,26 @@ class MediaStorePlugin : Plugin() {
                         }
                     }
                     notifyListeners("mediaSessionAction", event)
+
+                    // Also fire native listener (works even in Doze mode)
+                    nativeActionListener?.invoke(action, extras)
                 }
             }
             isServiceBound = true
 
-            // Execute any pending metadata call
+            // Execute any pending JS metadata call
             pendingMetadataCall?.let { call ->
                 executeSetMediaSession(call)
                 pendingMetadataCall = null
+            }
+
+            // Execute any pending native metadata call
+            pendingNativeMetadata?.let { meta ->
+                executeSetMediaSessionNative(
+                    meta.title, meta.artist, meta.album,
+                    meta.artworkUrl, meta.duration, meta.smallIconName, meta.buttons
+                )
+                pendingNativeMetadata = null
             }
         }
 
@@ -504,22 +517,133 @@ class MediaStorePlugin : Plugin() {
         }
     }
 
+    // ──────────────────────────────────────────────
+    // Native API — for other plugins to call directly
+    // (No PluginCall/JS bridge needed — works in Doze mode)
+    // ──────────────────────────────────────────────
+
     /**
-     * Called directly from other native plugins (e.g. MediaBackgroundPlugin)
-     * to update the MediaSession notification without going through JS.
-     * This is critical for background auto-advance where JS is throttled.
+     * Secondary action listener for native plugin callers.
+     * Fires alongside the JS "mediaSessionAction" event, but doesn't need JS to be alive.
      */
-    fun setMediaSessionFromNative(title: String, artist: String, album: String, artworkUrl: String) {
+    private var nativeActionListener: ((String, Map<String, Any>?) -> Unit)? = null
+
+    /**
+     * Register a native action listener. When a notification button is tapped,
+     * this listener fires with the action name — no JS bridge involved.
+     *
+     * Usage from another plugin:
+     *   val mediaStore = bridge.getPlugin("CapacitorMediaStore").instance as MediaStorePlugin
+     *   mediaStore.setNativeActionListener { action, extras -> ... }
+     */
+    fun setNativeActionListener(listener: ((String, Map<String, Any>?) -> Unit)?) {
+        nativeActionListener = listener
+        android.util.Log.d("MediaStorePlugin", "[NativeAPI] Action listener ${if (listener != null) "registered" else "cleared"}")
+    }
+
+    /**
+     * Start/bind the foreground service and set metadata.
+     * Native equivalent of setMediaSession() @PluginMethod.
+     */
+    fun setMediaSessionNative(
+        title: String,
+        artist: String,
+        album: String? = null,
+        artworkUrl: String? = null,
+        duration: Long? = null,
+        smallIconName: String? = null,
+        buttons: List<MediaSessionService.CustomButton>? = null
+    ) {
         try {
-            if (isServiceBound && mediaSessionService != null) {
-                mediaSessionService?.setMetadata(title, artist, album.ifEmpty { null }, artworkUrl.ifEmpty { null }, null, null)
-                mediaSessionService?.updatePlaybackState("playing")
-                android.util.Log.d("MediaStorePlugin", "[NativeUpdate] MediaSession updated: $title - $artist")
+            if (!isServiceBound) {
+                // Start and bind the service, then execute once connected
+                pendingNativeMetadata = NativeMetadata(title, artist, album, artworkUrl, duration, smallIconName, buttons)
+                val intent = android.content.Intent(context, MediaSessionService::class.java)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+                context.bindService(intent, serviceConnection, android.content.Context.BIND_AUTO_CREATE)
             } else {
-                android.util.Log.w("MediaStorePlugin", "[NativeUpdate] Service not bound, cannot update MediaSession")
+                executeSetMediaSessionNative(title, artist, album, artworkUrl, duration, smallIconName, buttons)
             }
         } catch (e: Exception) {
-            android.util.Log.e("MediaStorePlugin", "[NativeUpdate] Failed: ${e.message}")
+            android.util.Log.e("MediaStorePlugin", "[NativeAPI] setMediaSessionNative failed: ${e.message}")
+        }
+    }
+
+    /** Internal data class for pending native metadata */
+    private data class NativeMetadata(
+        val title: String,
+        val artist: String,
+        val album: String?,
+        val artworkUrl: String?,
+        val duration: Long?,
+        val smallIconName: String?,
+        val buttons: List<MediaSessionService.CustomButton>?
+    )
+    private var pendingNativeMetadata: NativeMetadata? = null
+
+    private fun executeSetMediaSessionNative(
+        title: String, artist: String, album: String?,
+        artworkUrl: String?, duration: Long?,
+        smallIconName: String?,
+        buttons: List<MediaSessionService.CustomButton>?
+    ) {
+        mediaSessionService?.setMetadata(title, artist, album, artworkUrl, duration, smallIconName)
+        if (buttons != null && buttons.isNotEmpty()) {
+            mediaSessionService?.updateButtons(buttons)
+        }
+        android.util.Log.d("MediaStorePlugin", "[NativeAPI] ✅ MediaSession set: $title - $artist")
+    }
+
+    /**
+     * Update playback state (playing/paused).
+     * Native equivalent of updatePlaybackState() @PluginMethod.
+     */
+    fun updatePlaybackStateNative(state: String) {
+        if (isServiceBound && mediaSessionService != null) {
+            mediaSessionService?.updatePlaybackState(state)
+        }
+    }
+
+    /**
+     * Update position/duration for the progress bar.
+     * Native equivalent of updatePositionState() @PluginMethod.
+     */
+    fun updatePositionStateNative(position: Double, duration: Double, playbackRate: Float) {
+        if (isServiceBound && mediaSessionService != null) {
+            mediaSessionService?.updatePositionState(position, duration, playbackRate)
+        }
+    }
+
+    /**
+     * Update notification button icons (merge strategy — only matching actions are updated).
+     * Native equivalent of updateMediaSessionButtons() @PluginMethod.
+     */
+    fun updateMediaSessionButtonsNative(buttons: List<MediaSessionService.CustomButton>) {
+        if (isServiceBound && mediaSessionService != null) {
+            mediaSessionService?.updateButtons(buttons)
+        }
+    }
+
+    /**
+     * Destroy the MediaSession service.
+     * Native equivalent of destroyMediaSession() @PluginMethod.
+     */
+    fun destroyMediaSessionNative() {
+        try {
+            if (isServiceBound) {
+                try { context.unbindService(serviceConnection) } catch (_: Exception) {}
+                isServiceBound = false
+            }
+            val intent = android.content.Intent(context, MediaSessionService::class.java)
+            context.stopService(intent)
+            mediaSessionService = null
+            android.util.Log.d("MediaStorePlugin", "[NativeAPI] ✅ MediaSession destroyed")
+        } catch (e: Exception) {
+            android.util.Log.e("MediaStorePlugin", "[NativeAPI] Destroy failed: ${e.message}")
         }
     }
 

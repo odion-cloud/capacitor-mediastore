@@ -353,16 +353,7 @@ class MediaSessionService : Service() {
         if (!artworkUrl.isNullOrEmpty()) {
             thread {
                 try {
-                    val bitmap = if (artworkUrl.startsWith("data:")) {
-                        val base64Data = artworkUrl.substringAfter(",")
-                        val bytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    } else {
-                        val connection = URL(artworkUrl).openConnection()
-                        connection.connectTimeout = 5000
-                        connection.readTimeout = 5000
-                        BitmapFactory.decodeStream(connection.getInputStream())
-                    }
+                    val bitmap = loadArtworkBitmap(artworkUrl)
 
                     if (bitmap != null) {
                         currentArtwork = bitmap
@@ -472,6 +463,89 @@ class MediaSessionService : Service() {
         }
 
         mediaSession?.setPlaybackState(stateBuilder.build())
+    }
+
+    /**
+     * Load artwork bitmap from various sources:
+     * - data: URI (base64 encoded)
+     * - Local file path (file:///storage/..., /storage/...)
+     * - content:// URI
+     * - Embedded album art (for audio files with no separate thumbnail)
+     * - HTTP/HTTPS URL
+     */
+    private fun loadArtworkBitmap(artworkUrl: String): Bitmap? {
+        return try {
+            when {
+                // 1. Base64 data URI
+                artworkUrl.startsWith("data:") -> {
+                    val base64Data = artworkUrl.substringAfter(",")
+                    val bytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                }
+
+                // 2. Local file path (file:// or absolute /storage/ path)
+                artworkUrl.startsWith("file://") || artworkUrl.startsWith("/") -> {
+                    val filePath = if (artworkUrl.startsWith("file://")) {
+                        artworkUrl.removePrefix("file://")
+                    } else {
+                        artworkUrl
+                    }
+                    // First try direct decode (works for image files)
+                    var bitmap = BitmapFactory.decodeFile(filePath)
+                    // If null, try extracting embedded album art (audio files)
+                    if (bitmap == null) {
+                        bitmap = extractEmbeddedArt(filePath)
+                    }
+                    bitmap
+                }
+
+                // 3. Content URI
+                artworkUrl.startsWith("content://") -> {
+                    try {
+                        val uri = android.net.Uri.parse(artworkUrl)
+                        val inputStream = contentResolver.openInputStream(uri)
+                        val bitmap = BitmapFactory.decodeStream(inputStream)
+                        inputStream?.close()
+                        bitmap
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Content URI artwork failed: ${e.message}")
+                        null
+                    }
+                }
+
+                // 4. HTTP/HTTPS URL
+                else -> {
+                    val connection = URL(artworkUrl).openConnection()
+                    connection.connectTimeout = 5000
+                    connection.readTimeout = 5000
+                    BitmapFactory.decodeStream(connection.getInputStream())
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "loadArtworkBitmap failed for '$artworkUrl': ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Extract embedded album art from an audio file using MediaMetadataRetriever.
+     * Works for MP3 (ID3), FLAC, OGG, M4A, etc.
+     */
+    private fun extractEmbeddedArt(filePath: String): Bitmap? {
+        return try {
+            val retriever = android.media.MediaMetadataRetriever()
+            retriever.setDataSource(filePath)
+            val artBytes = retriever.embeddedPicture
+            retriever.release()
+            if (artBytes != null) {
+                BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Embedded art extraction failed: ${e.message}")
+            null
+        }
     }
 
     /**
