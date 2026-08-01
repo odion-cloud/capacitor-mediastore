@@ -489,6 +489,9 @@ class MediaStoreHelper(private val context: Context) {
                         MediaStore.Audio.Media.TITLE,
                         MediaStore.Audio.Media.ARTIST,
                         MediaStore.Audio.Media.ALBUM,
+                        // ALBUM_ID is read directly from the cursor to build albumArtUri,
+                        // avoiding a per-row sub-query (N+1).
+                        MediaStore.Audio.Media.ALBUM_ID,
                         MediaStore.Audio.Media.ALBUM_ARTIST,
                         MediaStore.Audio.Media.COMPOSER,
                         MediaStore.Audio.Media.GENRE,
@@ -497,9 +500,10 @@ class MediaStoreHelper(private val context: Context) {
                         MediaStore.Audio.Media.BOOKMARK
                     )
                 } else {
-                    // Android 12 and below - use only universally available columns when querying Files URI
-                    // Audio-specific columns will be handled in populateMediaObject by checking column existence
-                    baseProjection
+                    // Android 12 and below - use only universally available columns when querying Files URI.
+                    // ALBUM_ID is exposed by both the Audio and the Files content URI (the files table
+                    // has an album_id column), so populateMediaObject can build albumArtUri without a sub-query.
+                    baseProjection + arrayOf(MediaStore.Audio.Media.ALBUM_ID)
                 }
             }
             "video" -> baseProjection + arrayOf(
@@ -552,6 +556,7 @@ class MediaStoreHelper(private val context: Context) {
                 val genreColumn = cursor.getColumnIndex(MediaStore.Audio.Media.GENRE)
                 val trackColumn = cursor.getColumnIndex(MediaStore.Audio.Media.TRACK)
                 val yearColumn = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
+                val albumIdColumn = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
 
                 if (durationColumn >= 0) mediaObject.put("duration", cursor.getLong(durationColumn))
                 if (titleColumn >= 0) mediaObject.put("title", cursor.getString(titleColumn) ?: "Unknown")
@@ -585,8 +590,9 @@ class MediaStoreHelper(private val context: Context) {
                     }
                 }
 
-                // Get album art URI
-                val albumId = getAlbumId(cursor.getString(idColumn))
+                // Get album art URI — ALBUM_ID comes straight from this cursor's projection,
+                // no per-row sub-query.
+                val albumId = if (albumIdColumn >= 0) cursor.getLong(albumIdColumn) else null
                 if (albumId != null) {
                     val albumArtUri = ContentUris.withAppendedId(
                         Uri.parse("content://media/external/audio/albumart"),
@@ -686,29 +692,6 @@ class MediaStoreHelper(private val context: Context) {
 
         val order = if (options.sortOrder == "ASC") "ASC" else "DESC"
         return "$sortColumn $order"
-    }
-
-    private fun getAlbumId(mediaId: String?): Long? {
-        if (mediaId == null) return null
-        
-        val cursor = context.contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            arrayOf(MediaStore.Audio.Media.ALBUM_ID),
-            "${MediaStore.Audio.Media._ID} = ?",
-            arrayOf(mediaId),
-            null
-        )
-
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val albumIdColumn = it.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
-                if (albumIdColumn >= 0) {
-                    return it.getLong(albumIdColumn)
-                }
-            }
-        }
-
-        return null
     }
 
     private fun getMimeType(mediaType: String, fileName: String): String {
