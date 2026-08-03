@@ -30,20 +30,8 @@ import com.getcapacitor.PermissionState
             alias = "writeExternalStorage"
         ),
         Permission(
-            strings = [Manifest.permission.READ_MEDIA_IMAGES],
-            alias = "readMediaImages"
-        ),
-        Permission(
             strings = [Manifest.permission.READ_MEDIA_AUDIO],
             alias = "readMediaAudio"
-        ),
-        Permission(
-            strings = [Manifest.permission.READ_MEDIA_VIDEO],
-            alias = "readMediaVideo"
-        ),
-        Permission(
-            strings = ["android.permission.READ_MEDIA_VISUAL_USER_SELECTED"],
-            alias = "readMediaVisualUserSelected"
         ),
         Permission(
             strings = ["android.permission.POST_NOTIFICATIONS"],
@@ -237,18 +225,9 @@ class MediaStorePlugin : Plugin() {
         val result = JSObject()
         
         when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                // Android 14+ (API 34+) - Visual media permissions
-                result.put("readMediaImages", getPermissionState("readMediaImages").toString())
-                result.put("readMediaAudio", getPermissionState("readMediaAudio").toString())
-                result.put("readMediaVideo", getPermissionState("readMediaVideo").toString())
-                result.put("readMediaVisualUserSelected", getPermissionState("readMediaVisualUserSelected").toString())
-            }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                // Android 13+ (API 33+) - Granular media permissions
-                result.put("readMediaImages", getPermissionState("readMediaImages").toString())
+                // Android 13+ (API 33+) - Audio-only media permission
                 result.put("readMediaAudio", getPermissionState("readMediaAudio").toString())
-                result.put("readMediaVideo", getPermissionState("readMediaVideo").toString())
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
                 // Android 6+ (API 23+) - Runtime permissions
@@ -277,13 +256,6 @@ class MediaStorePlugin : Plugin() {
             // Request specific permission types using aliases
             for (i in 0 until requestedTypes.length()) {
                 when (requestedTypes.getString(i)?.lowercase()) {
-                    "images" -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            aliasesToRequest.add("readMediaImages")
-                        } else {
-                            aliasesToRequest.add("readExternalStorage")
-                        }
-                    }
                     "audio" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             aliasesToRequest.add("readMediaAudio")
@@ -291,10 +263,10 @@ class MediaStorePlugin : Plugin() {
                             aliasesToRequest.add("readExternalStorage")
                         }
                     }
-                    "video" -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            aliasesToRequest.add("readMediaVideo")
-                        } else {
+                    "images", "video" -> {
+                        // Image/Video permissions removed per Google Play policy
+                        // Fall back to readExternalStorage on older Android versions
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                             aliasesToRequest.add("readExternalStorage")
                         }
                     }
@@ -306,23 +278,12 @@ class MediaStorePlugin : Plugin() {
                 }
             }
         } else {
-            // Request all permissions using aliases
+            // Request all permissions using aliases — AUDIO ONLY
             when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                    // Android 14+ (API 34+) - Visual media permissions
-                    aliasesToRequest.addAll(listOf(
-                        "readMediaImages",
-                        "readMediaAudio", 
-                        "readMediaVideo",
-                        "readMediaVisualUserSelected"
-                    ))
-                }
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                    // Android 13+ (API 33+) - Granular media permissions
+                    // Android 13+ (API 33+) - Audio-only media permission
                     aliasesToRequest.addAll(listOf(
-                        "readMediaImages",
-                        "readMediaAudio",
-                        "readMediaVideo"
+                        "readMediaAudio"
                     ))
                 }
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
@@ -653,18 +614,9 @@ class MediaStorePlugin : Plugin() {
 
     override fun hasRequiredPermissions(): Boolean {
         return when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                // Android 14+ (API 34+) - Visual media permissions
-                getPermissionState("readMediaImages") == PermissionState.GRANTED ||
-                getPermissionState("readMediaAudio") == PermissionState.GRANTED ||
-                getPermissionState("readMediaVideo") == PermissionState.GRANTED ||
-                getPermissionState("readMediaVisualUserSelected") == PermissionState.GRANTED
-            }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                // Android 13+ (API 33+) - Granular media permissions
-                getPermissionState("readMediaImages") == PermissionState.GRANTED ||
-                getPermissionState("readMediaAudio") == PermissionState.GRANTED ||
-                getPermissionState("readMediaVideo") == PermissionState.GRANTED
+                // Android 13+ (API 33+) - Audio-only media permission
+                getPermissionState("readMediaAudio") == PermissionState.GRANTED
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
                 // Android 10-12 (API 29-32) - Scoped storage with READ_EXTERNAL_STORAGE

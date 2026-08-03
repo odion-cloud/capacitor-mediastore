@@ -6,13 +6,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
                      android:maxSdkVersion="29" />
     
-    <!-- Granular media permissions for Android 13+ -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Granular media permissions for Android 13+ — AUDIO ONLY -->
+    <!-- READ_MEDIA_IMAGES and READ_MEDIA_VIDEO removed per Google Play policy -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    
-    <!-- Android 14+ Visual media permissions -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+
     
 
     <!-- Media Session: Foreground service permissions -->
