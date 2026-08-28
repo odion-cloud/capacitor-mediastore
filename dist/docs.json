@@ -225,12 +225,50 @@
         "slug": "updatemediasessionbuttons"
       },
       {
+        "name": "saveFileAs",
+        "signature": "(options: SaveFileAsOptions) => Promise<SaveFileAsResult>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "SaveFileAsOptions"
+          }
+        ],
+        "returns": "Promise<SaveFileAsResult>",
+        "tags": [],
+        "docs": "Opens the native \"Save As\" file picker (Android SAF CreateDocument / iOS UIDocumentPicker).\nUser selects where to save the file. Data is provided as a base64 string.",
+        "complexTypes": [
+          "SaveFileAsResult",
+          "SaveFileAsOptions"
+        ],
+        "slug": "savefileas"
+      },
+      {
+        "name": "openFile",
+        "signature": "(options?: OpenFileOptions | undefined) => Promise<OpenFileResult>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "OpenFileOptions | undefined"
+          }
+        ],
+        "returns": "Promise<OpenFileResult>",
+        "tags": [],
+        "docs": "Opens the native \"Open\" file picker (Android SAF OpenDocument / iOS UIDocumentPicker).\nUser selects a file to open. Returns file data as a base64 string.",
+        "complexTypes": [
+          "OpenFileResult",
+          "OpenFileOptions"
+        ],
+        "slug": "openfile"
+      },
+      {
         "name": "destroyMediaSession",
         "signature": "() => Promise<void>",
         "parameters": [],
         "returns": "Promise<void>",
         "tags": [],
-        "docs": "Destroy the media session and dismiss the notification.",
+        "docs": "",
         "complexTypes": [],
         "slug": "destroymediasession"
       }
@@ -973,6 +1011,126 @@
             "MediaSessionButton"
           ],
           "type": "MediaSessionButton[]"
+        }
+      ]
+    },
+    {
+      "name": "SaveFileAsResult",
+      "slug": "savefileasresult",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "success",
+          "tags": [],
+          "docs": "Whether the save was successful",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "cancelled",
+          "tags": [],
+          "docs": "Whether the user cancelled the picker",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "uri",
+          "tags": [],
+          "docs": "URI of the saved file (platform-specific)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "SaveFileAsOptions",
+      "slug": "savefileasoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "fileName",
+          "tags": [],
+          "docs": "Suggested file name for the save dialog",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "mimeType",
+          "tags": [],
+          "docs": "MIME type for the file (default: 'application/octet-stream')",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "data",
+          "tags": [],
+          "docs": "File content as a base64-encoded string",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "OpenFileResult",
+      "slug": "openfileresult",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "data",
+          "tags": [],
+          "docs": "File content as a base64-encoded string",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "name",
+          "tags": [],
+          "docs": "File name",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "mimeType",
+          "tags": [],
+          "docs": "MIME type of the file",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "size",
+          "tags": [],
+          "docs": "File size in bytes",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "cancelled",
+          "tags": [],
+          "docs": "Whether the user cancelled the picker",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        }
+      ]
+    },
+    {
+      "name": "OpenFileOptions",
+      "slug": "openfileoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "mimeTypes",
+          "tags": [],
+          "docs": "Array of MIME types to filter by (default: all types)",
+          "complexTypes": [],
+          "type": "string[] | undefined"
         }
       ]
     }

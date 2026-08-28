@@ -341,6 +341,7 @@
             <button class="tab" onclick="showTab('usage')">Usage</button>
             <button class="tab" onclick="showTab('filewatcher')">File Watcher</button>
             <button class="tab" onclick="showTab('mediasession')">Media Session</button>
+            <button class="tab" onclick="showTab('filepicker')">File Picker</button>
             <button class="tab" onclick="showTab('examples')">Examples</button>
             <button class="tab" onclick="showTab('api')">API</button>
         </div>
@@ -1174,6 +1175,115 @@ music.media.forEach(song => {
                 <strong>Remember:</strong> Always check permissions before accessing media files. The plugin will show
                 permission dialogs automatically when needed.
             </div>
+        </div>
+
+        <!-- File Picker Tab -->
+        <div id="filepicker" class="tab-content">
+            <h2>?? File Picker — Native Save As & Open</h2>
+            <p>Open native file browsers on Android (SAF) and iOS (UIDocumentPicker) to let users choose where to save or open files. <strong>No storage permissions required</strong> — the system grants URI-based access for the selected file.</p>
+
+            <div class="info-box" style="margin: 1.5rem 0; padding: 1rem 1.25rem; background: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 8px;">
+                <strong>?? Note:</strong> These methods are for native Android/iOS only. On web, use <code>window.showSaveFilePicker()</code> and <code>&lt;input type="file"&gt;</code> instead.
+            </div>
+
+            <h3>Save a File (Native "Save As" Dialog)</h3>
+            <p>Opens the system document browser where the user picks a destination folder and filename.</p>
+            <pre><code>const result = await CapacitorMediaStore.saveFileAs({
+  fileName: "MyBackup_20260827.backup",
+  mimeType: "application/octet-stream",
+  data: base64EncodedString,
+});
+
+if (result.cancelled) {
+  console.log("User cancelled");
+} else if (result.success) {
+  console.log("Saved to:", result.uri);
+}</code></pre>
+
+            <h3>Open a File (Native File Browser)</h3>
+            <p>Opens the system file browser to select a file. Returns the content as base64.</p>
+            <pre><code>const result = await CapacitorMediaStore.openFile({
+  mimeTypes: ["application/octet-stream", "application/zip"],
+});
+
+if (result.cancelled) return;
+
+console.log("Name:", result.name);
+console.log("Size:", result.size, "bytes");
+// result.data = base64 encoded file content</code></pre>
+
+            <h3>Example: Backup & Restore</h3>
+            <pre><code>import { CapacitorMediaStore } from "@odion-cloud/capacitor-mediastore";
+import JSZip from "jszip";
+
+// Create & Save backup
+async function createBackup() {
+  const zip = new JSZip();
+  zip.file("data.json", JSON.stringify({ playlists: [] }));
+  const zipBase64 = await zip.generateAsync({ type: "base64" });
+
+  return await CapacitorMediaStore.saveFileAs({
+    fileName: "MyApp_Backup.zip",
+    mimeType: "application/zip",
+    data: zipBase64,
+  });
+}
+
+// Restore from file
+async function restoreBackup() {
+  const result = await CapacitorMediaStore.openFile({
+    mimeTypes: ["application/zip", "application/octet-stream"],
+  });
+  if (result.cancelled) return;
+
+  const zip = await JSZip.loadAsync(result.data, { base64: true });
+  const data = await zip.file("data.json")?.async("text");
+  return JSON.parse(data);
+}</code></pre>
+
+            <h3>Interfaces</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <h4>SaveFileAsOptions</h4>
+                    <pre><code>interface SaveFileAsOptions {
+  fileName: string;    // Suggested filename
+  mimeType?: string;   // MIME type
+  data: string;        // Base64 content
+}</code></pre>
+                    <h4>SaveFileAsResult</h4>
+                    <pre><code>interface SaveFileAsResult {
+  success?: boolean;
+  cancelled?: boolean;
+  uri?: string;
+}</code></pre>
+                </div>
+                <div>
+                    <h4>OpenFileOptions</h4>
+                    <pre><code>interface OpenFileOptions {
+  mimeTypes?: string[];
+}</code></pre>
+                    <h4>OpenFileResult</h4>
+                    <pre><code>interface OpenFileResult {
+  data?: string;       // Base64 content
+  name?: string;       // Filename
+  mimeType?: string;
+  size?: number;       // Bytes
+  cancelled?: boolean;
+}</code></pre>
+                </div>
+            </div>
+
+            <h3>Platform Behavior</h3>
+            <table>
+                <thead>
+                    <tr><th>Platform</th><th>Save As</th><th>Open File</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Android</strong></td><td>SAF <code>ACTION_CREATE_DOCUMENT</code></td><td>SAF <code>ACTION_OPEN_DOCUMENT</code></td></tr>
+                    <tr><td><strong>iOS</strong></td><td><code>UIDocumentPicker(forExporting:)</code></td><td><code>UIDocumentPicker(forOpeningContentTypes:)</code></td></tr>
+                    <tr><td><strong>Web</strong></td><td>N/A — use <code>showSaveFilePicker()</code></td><td>N/A — use <code>&lt;input type="file"&gt;</code></td></tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- Examples Tab -->

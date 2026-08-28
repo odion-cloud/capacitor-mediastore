@@ -59,6 +59,16 @@ export interface CapacitorMediaStorePlugin {
     /**
      * Destroy the media session and dismiss the notification.
      */
+    /**
+     * Opens the native "Save As" file picker (Android SAF CreateDocument / iOS UIDocumentPicker).
+     * User selects where to save the file. Data is provided as a base64 string.
+     */
+    saveFileAs(options: SaveFileAsOptions): Promise<SaveFileAsResult>;
+    /**
+     * Opens the native "Open" file picker (Android SAF OpenDocument / iOS UIDocumentPicker).
+     * User selects a file to open. Returns file data as a base64 string.
+     */
+    openFile(options?: OpenFileOptions): Promise<OpenFileResult>;
     destroyMediaSession(): Promise<void>;
 }
 export interface MediaQueryOptions {
@@ -473,4 +483,60 @@ export declare enum PermissionState {
     DENIED = "denied",
     PROMPT = "prompt",
     PROMPT_WITH_RATIONALE = "prompt-with-rationale"
+}
+export interface SaveFileAsOptions {
+    /**
+     * Suggested file name for the save dialog
+     */
+    fileName: string;
+    /**
+     * MIME type for the file (default: 'application/octet-stream')
+     */
+    mimeType?: string;
+    /**
+     * File content as a base64-encoded string
+     */
+    data: string;
+}
+export interface SaveFileAsResult {
+    /**
+     * Whether the save was successful
+     */
+    success?: boolean;
+    /**
+     * Whether the user cancelled the picker
+     */
+    cancelled?: boolean;
+    /**
+     * URI of the saved file (platform-specific)
+     */
+    uri?: string;
+}
+export interface OpenFileOptions {
+    /**
+     * Array of MIME types to filter by (default: all types)
+     */
+    mimeTypes?: string[];
+}
+export interface OpenFileResult {
+    /**
+     * File content as a base64-encoded string
+     */
+    data?: string;
+    /**
+     * File name
+     */
+    name?: string;
+    /**
+     * MIME type of the file
+     */
+    mimeType?: string;
+    /**
+     * File size in bytes
+     */
+    size?: number;
+    /**
+     * Whether the user cancelled the picker
+     */
+    cancelled?: boolean;
 }

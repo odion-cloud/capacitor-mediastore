@@ -1,6 +1,10 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { 
+import type {
+  SaveFileAsOptions,
+  SaveFileAsResult,
+  OpenFileOptions,
+  OpenFileResult, 
   CapacitorMediaStorePlugin, 
   MediaQueryOptions, 
   MediaResponse, 
@@ -133,5 +137,19 @@ export class CapacitorMediaStoreWeb extends WebPlugin implements CapacitorMediaS
       navigator.mediaSession.metadata = null;
       navigator.mediaSession.playbackState = 'none';
     }
+  }
+
+  // ----------------------------------------------------------------
+  // File Picker — Save As & Open (web stubs — web uses showSaveFilePicker directly)
+  // ----------------------------------------------------------------
+
+  async saveFileAs(options: SaveFileAsOptions): Promise<SaveFileAsResult> {
+    console.warn('CapacitorMediaStore.saveFileAs() is not needed on web — use showSaveFilePicker directly');
+    throw this.unimplemented('Not implemented on web. Use window.showSaveFilePicker instead.');
+  }
+
+  async openFile(options?: OpenFileOptions): Promise<OpenFileResult> {
+    console.warn('CapacitorMediaStore.openFile() is not needed on web — use <input type=file> directly');
+    throw this.unimplemented('Not implemented on web. Use file input or showOpenFilePicker instead.');
   }
 }

@@ -16,6 +16,11 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
 import com.getcapacitor.annotation.PermissionCallback
+import android.app.Activity
+import android.net.Uri
+import android.util.Base64
+import androidx.activity.result.ActivityResult
+import com.getcapacitor.annotation.ActivityCallback
 import com.getcapacitor.PermissionState
 
 @CapacitorPlugin(
@@ -608,6 +613,150 @@ class MediaStorePlugin : Plugin() {
         }
     }
 
+
+    // ----------------------------------------------------------------
+    // File Picker � Save As & Open (SAF)
+    // ----------------------------------------------------------------
+
+    /** Pending base64 data to write once user picks a save location */
+    private var pendingSaveData: String? = null
+
+    /**
+     * Opens Android's native "Save As" document picker (SAF CreateDocument).
+     * JS sends: { fileName: "name.ext", mimeType: "application/octet-stream", data: "<base64>" }
+     */
+    @PluginMethod
+    fun saveFileAs(call: PluginCall) {
+        val fileName = call.getString("fileName") ?: run {
+            call.reject("fileName is required")
+            return
+        }
+        val mimeType = call.getString("mimeType") ?: "application/octet-stream"
+        pendingSaveData = call.getString("data")
+        if (pendingSaveData == null) {
+            call.reject("data (base64 string) is required")
+            return
+        }
+
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = mimeType
+            putExtra(Intent.EXTRA_TITLE, fileName)
+        }
+
+        startActivityForResult(call, intent, "onSaveFileResult")
+    }
+
+    @ActivityCallback
+    private fun onSaveFileResult(call: PluginCall, result: ActivityResult) {
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri: Uri? = result.data?.data
+            if (uri != null && pendingSaveData != null) {
+                try {
+                    val bytes = Base64.decode(pendingSaveData, Base64.DEFAULT)
+                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(bytes)
+                        outputStream.flush()
+                    }
+                    pendingSaveData = null
+
+                    val ret = JSObject()
+                    ret.put("success", true)
+                    ret.put("uri", uri.toString())
+                    call.resolve(ret)
+                } catch (e: Exception) {
+                    pendingSaveData = null
+                    call.reject("Failed to write file: ${e.message}", e)
+                }
+            } else {
+                pendingSaveData = null
+                call.reject("No URI returned from file picker")
+            }
+        } else {
+            pendingSaveData = null
+            val ret = JSObject()
+            ret.put("cancelled", true)
+            call.resolve(ret)
+        }
+    }
+
+    /**
+     * Opens Android's native "Open" document picker (SAF OpenDocument).
+     * JS sends: { mimeTypes: ["application/octet-stream", "application/zip"] }
+     * Returns: { data: "<base64>", name: "file.ext", mimeType: "...", size: 12345 }
+     */
+    @PluginMethod
+    fun openFile(call: PluginCall) {
+        val mimeTypesArray = call.getArray("mimeTypes")
+        val mimeTypes = if (mimeTypesArray != null && mimeTypesArray.length() > 0) {
+            (0 until mimeTypesArray.length()).map { mimeTypesArray.getString(it) }.toTypedArray()
+        } else {
+            arrayOf("*/*")
+        }
+
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            if (mimeTypes.size == 1) {
+                type = mimeTypes[0]
+            } else {
+                type = "*/*"
+                putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+            }
+        }
+
+        startActivityForResult(call, intent, "onOpenFileResult")
+    }
+
+    @ActivityCallback
+    private fun onOpenFileResult(call: PluginCall, result: ActivityResult) {
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri: Uri? = result.data?.data
+            if (uri != null) {
+                try {
+                    val contentResolver = context.contentResolver
+
+                    // Read file bytes
+                    val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                        ?: throw Exception("Could not read file")
+
+                    val base64Data = Base64.encodeToString(bytes, Base64.NO_WRAP)
+
+                    // Get file name from cursor
+                    var fileName = "unknown"
+                    var fileSize = bytes.size.toLong()
+                    val mimeType = contentResolver.getType(uri) ?: "application/octet-stream"
+
+                    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                            if (nameIndex >= 0) {
+                                fileName = cursor.getString(nameIndex) ?: "unknown"
+                            }
+                            val sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE)
+                            if (sizeIndex >= 0) {
+                                fileSize = cursor.getLong(sizeIndex)
+                            }
+                        }
+                    }
+
+                    val ret = JSObject()
+                    ret.put("data", base64Data)
+                    ret.put("name", fileName)
+                    ret.put("mimeType", mimeType)
+                    ret.put("size", fileSize)
+                    call.resolve(ret)
+                } catch (e: Exception) {
+                    call.reject("Failed to read file: ${e.message}", e)
+                }
+            } else {
+                call.reject("No URI returned from file picker")
+            }
+        } else {
+            val ret = JSObject()
+            ret.put("cancelled", true)
+            call.resolve(ret)
+        }
+    }
     // ──────────────────────────────────────────────
     // Permission helpers
     // ──────────────────────────────────────────────

@@ -20,6 +20,7 @@ npx cap sync
 - ✅ **Native media session notifications** with custom buttons (like, shuffle, repeat)
 - ✅ **Custom app logo** in media notifications
 - ✅ **Lock screen controls** with progress bar
+- ? **Native file picker** � Save As & Open document browser (SAF on Android, UIDocumentPicker on iOS)
 - ✅ Works on all Android versions (5.0+) and iOS (12+)
 
 ## 🛠️ Setup
@@ -378,6 +379,144 @@ async function buildMusicLibrary() {
 }
 ```
 
+
+---
+
+## File Picker � Native Save As & Open
+
+Open native file browsers on Android (SAF � Storage Access Framework) and iOS (UIDocumentPicker) to let users choose where to save files or pick files to open. No storage permissions required � the system grants URI-based access.
+
+> **Note:** These methods are designed for native Android/iOS only. On web, use `window.showSaveFilePicker()` and `<input type="file">` instead.
+
+### Save a File (Native "Save As" Dialog)
+
+Opens the system document browser where the user picks a destination folder and filename.
+
+```typescript
+// Generate your data as a base64 string
+const base64Data = btoa("Hello, world!"); // or from a Blob/ArrayBuffer
+
+const result = await CapacitorMediaStore.saveFileAs({
+  fileName: "MyBackup_20260827.backup",
+  mimeType: "application/octet-stream", // optional, default: application/octet-stream
+  data: base64Data,
+});
+
+if (result.cancelled) {
+  console.log("User cancelled the save picker");
+} else if (result.success) {
+  console.log("File saved to:", result.uri);
+}
+```
+
+### Open a File (Native File Browser)
+
+Opens the system file browser where the user selects a file. Returns the file content as base64.
+
+```typescript
+const result = await CapacitorMediaStore.openFile({
+  mimeTypes: ["application/octet-stream", "application/zip"],
+});
+
+if (result.cancelled) {
+  console.log("User cancelled the file picker");
+} else {
+  console.log("File name:", result.name);
+  console.log("MIME type:", result.mimeType);
+  console.log("Size:", result.size, "bytes");
+  // result.data contains the file as a base64 string
+  const rawBytes = atob(result.data);
+}
+```
+
+### Example: Backup & Restore Workflow
+
+```typescript
+import { CapacitorMediaStore } from "@odion-cloud/capacitor-mediastore";
+import JSZip from "jszip";
+
+// -- Create & Save a Backup --
+async function createBackup() {
+  const zip = new JSZip();
+  zip.file("data.json", JSON.stringify({ playlists: [] }));
+
+  const zipBase64 = await zip.generateAsync({
+    type: "base64",
+    compression: "DEFLATE",
+  });
+
+  const result = await CapacitorMediaStore.saveFileAs({
+    fileName: "MyApp_Backup.zip",
+    mimeType: "application/zip",
+    data: zipBase64,
+  });
+
+  return result.success;
+}
+
+// -- Open & Restore a Backup --
+async function restoreBackup() {
+  const result = await CapacitorMediaStore.openFile({
+    mimeTypes: ["application/zip", "application/octet-stream"],
+  });
+
+  if (result.cancelled) return;
+
+  const zip = await JSZip.loadAsync(result.data, { base64: true });
+  const dataJson = await zip.file("data.json")?.async("text");
+  const restored = JSON.parse(dataJson);
+  console.log("Restored playlists:", restored.playlists.length);
+}
+```
+
+### SaveFileAsOptions
+
+```typescript
+interface SaveFileAsOptions {
+  fileName: string;                // Suggested file name for the save dialog
+  mimeType?: string;               // MIME type (default: 'application/octet-stream')
+  data: string;                    // File content as base64-encoded string
+}
+```
+
+### SaveFileAsResult
+
+```typescript
+interface SaveFileAsResult {
+  success?: boolean;               // Whether the save was successful
+  cancelled?: boolean;             // Whether the user cancelled the picker
+  uri?: string;                    // URI of the saved file (platform-specific)
+}
+```
+
+### OpenFileOptions
+
+```typescript
+interface OpenFileOptions {
+  mimeTypes?: string[];            // Array of MIME types to filter (default: all types)
+}
+```
+
+### OpenFileResult
+
+```typescript
+interface OpenFileResult {
+  data?: string;                   // File content as base64 string
+  name?: string;                   // File name
+  mimeType?: string;               // MIME type of the file
+  size?: number;                   // File size in bytes
+  cancelled?: boolean;             // Whether the user cancelled the picker
+}
+```
+
+### Platform Behavior
+
+| Platform    | Save As                                              | Open File                                            |
+| ----------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| **Android** | SAF `ACTION_CREATE_DOCUMENT` (full folder browser)     | SAF `ACTION_OPEN_DOCUMENT` (full file browser)         |
+| **iOS**     | `UIDocumentPicker(forExporting:)`                      | `UIDocumentPicker(forOpeningContentTypes:)`             |
+| **Web**     | N/A � use `showSaveFilePicker()`                       | N/A � use `<input type="file">`                        |
+
 ## 📋 API Reference
 
 ### Media Store Methods
@@ -399,6 +538,13 @@ async function buildMusicLibrary() {
 | `startWatching(options?)` | Start watching for file changes |
 | `stopWatching()`          | Stop watching for file changes  |
 
+
+### File Picker Methods (Save As & Open)
+
+| Method                    | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `saveFileAs(options)`     | Open native "Save As" picker to save a file to user-chosen location     |
+| `openFile(options?)`      | Open native file browser to select and read a file                      |
 ### Media Session Methods (JS API)
 
 | Method                               | Description                             |

@@ -220,6 +220,25 @@ var CapacitorMediaStoreWeb = /** @class */ (function (_super) {
             });
         });
     };
+    // ----------------------------------------------------------------
+    // File Picker � Save As & Open (web stubs � web uses showSaveFilePicker directly)
+    // ----------------------------------------------------------------
+    CapacitorMediaStoreWeb.prototype.saveFileAs = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.saveFileAs() is not needed on web � use showSaveFilePicker directly');
+                throw this.unimplemented('Not implemented on web. Use window.showSaveFilePicker instead.');
+            });
+        });
+    };
+    CapacitorMediaStoreWeb.prototype.openFile = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                console.warn('CapacitorMediaStore.openFile() is not needed on web � use <input type=file> directly');
+                throw this.unimplemented('Not implemented on web. Use file input or showOpenFilePicker instead.');
+            });
+        });
+    };
     return CapacitorMediaStoreWeb;
 }(core_1.WebPlugin));
 exports.CapacitorMediaStoreWeb = CapacitorMediaStoreWeb;

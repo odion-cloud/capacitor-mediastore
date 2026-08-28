@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import type { CapacitorMediaStorePlugin, MediaQueryOptions, MediaResponse, MediaTypeOptions, AlbumResponse, SaveMediaOptions, SaveMediaResponse, MediaMetadataOptions, MediaMetadataResponse, PermissionStatus, RequestPermissionsOptions, WatchOptions, MediaSessionOptions, PlaybackStateOptions, PositionStateOptions, MediaSessionButtonOptions } from './definitions';
+import type { SaveFileAsOptions, SaveFileAsResult, OpenFileOptions, OpenFileResult, CapacitorMediaStorePlugin, MediaQueryOptions, MediaResponse, MediaTypeOptions, AlbumResponse, SaveMediaOptions, SaveMediaResponse, MediaMetadataOptions, MediaMetadataResponse, PermissionStatus, RequestPermissionsOptions, WatchOptions, MediaSessionOptions, PlaybackStateOptions, PositionStateOptions, MediaSessionButtonOptions } from './definitions';
 export declare class CapacitorMediaStoreWeb extends WebPlugin implements CapacitorMediaStorePlugin {
     getMedias(options?: MediaQueryOptions): Promise<MediaResponse>;
     getMediasByType(options: MediaTypeOptions): Promise<MediaResponse>;
@@ -15,4 +15,6 @@ export declare class CapacitorMediaStoreWeb extends WebPlugin implements Capacit
     updatePositionState(options: PositionStateOptions): Promise<void>;
     updateMediaSessionButtons(options: MediaSessionButtonOptions): Promise<void>;
     destroyMediaSession(): Promise<void>;
+    saveFileAs(options: SaveFileAsOptions): Promise<SaveFileAsResult>;
+    openFile(options?: OpenFileOptions): Promise<OpenFileResult>;
 }
